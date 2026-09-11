@@ -65,7 +65,7 @@
               <span>📈</span>
               <span>Progress</span>
             </button>
-            <button class="menu-item" data-panel="bookmarks">
+            <button class="menu-item" data-panel="saved">
               <span>📚</span>
               <span>Saved</span>
             </button>
@@ -129,6 +129,17 @@
               <span class="icon">⏭️</span>
               <span>次</span>
             </button>
+          </div>
+
+          <div class="feedback-link-wrap">
+            <span class="feedback-label">Feedback:</span>
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=info@kandelg.com.np"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              info@kandelg.com.np
+            </a>
           </div>
         </main>
 
@@ -195,11 +206,29 @@
       </div>
     </div>
 
-    <script src="kanji-n5-data.js"></script>
-    <script src="kanji-n4-data.js"></script>
-    <script src="kanji-n3-data.js"></script>
-    <script src="kanji-n2-data.js"></script>
-    <script src="kanji-n1-data.js"></script>
-    <script src="script.js"></script>
+    <div class="saved-session-panel" id="savedSessionPanel" aria-live="polite">
+      <div class="saved-session-card">
+        <h3>Saved sessions</h3>
+        <div class="saved-session-list" id="savedSessionList"></div>
+      </div>
+    </div>
+
+    <div class="save-progress-modal" id="saveProgressModal" aria-live="polite">
+      <div class="save-progress-card">
+        <h3 id="saveProgressTitle">Save progress?</h3>
+        <p id="saveProgressMessage">Your last session can be restored when you return.</p>
+        <div class="save-progress-actions">
+          <button type="button" id="saveProgressNo" class="secondary-btn">No</button>
+          <button type="button" id="saveProgressYes" class="primary-btn">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="kanji-n5-data.js?v=20260911-2249"></script>
+    <script src="kanji-n4-data.js?v=20260911-2249"></script>
+    <script src="kanji-n3-data.js?v=20260911-2249"></script>
+    <script src="kanji-n2-data.js?v=20260911-2249"></script>
+    <script src="kanji-n1-data.js?v=20260911-2249"></script>
+    <script src="script.js?v=20260911-2249"></script>
   </body>
 </html>

@@ -209,7 +209,8 @@ button, select, input {
   left: 0;
   top: 86px;
   bottom: 0;
-  width: 78%;
+  width: 52%;
+  max-width: 220px;
   background: rgba(11, 18, 34, 0.92);
   color: white;
   padding: 22px 18px;
@@ -272,6 +273,7 @@ button, select, input {
   padding: 14px 12px;
   cursor: pointer;
   font-size: 1rem;
+  text-decoration: none;
 }
 
 .menu-item.active {
@@ -566,6 +568,36 @@ button, select, input {
   gap: 18px;
 }
 
+.feedback-link-wrap {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.76rem;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(17, 47, 109, 0.06);
+  border: 1px solid rgba(17, 47, 109, 0.08);
+}
+
+.feedback-label {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.feedback-link-wrap a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.feedback-link-wrap a:hover {
+  text-decoration: underline;
+}
+
 .setting-item {
   display: flex;
   align-items: center;
@@ -627,6 +659,124 @@ input[type="range"] {
 
 .slider-item {
   align-items: center;
+}
+
+.saved-session-panel {
+  position: fixed;
+  right: 30px;
+  bottom: 36px;
+  width: min(360px, calc(100vw - 40px));
+  background: rgba(9, 14, 20, 0.96);
+  color: white;
+  border-radius: 22px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+  padding: 18px;
+  transform: translateX(calc(100% + 30px));
+  transition: transform 0.25s ease;
+  z-index: 35;
+}
+
+.saved-session-panel.is-open {
+  transform: translateX(0);
+}
+
+.saved-session-card h3 {
+  margin: 0 0 14px;
+  font-size: 1.12rem;
+}
+
+.saved-session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.saved-session-item {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.saved-session-item button {
+  margin-top: 6px;
+  align-self: flex-start;
+  border: none;
+  background: #7cc79b;
+  color: #082412;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.saved-session-item small {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.save-progress-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 17, 28, 0.4);
+  z-index: 60;
+}
+
+.save-progress-modal.is-open {
+  display: flex;
+}
+
+.save-progress-card {
+  width: min(320px, calc(100vw - 32px));
+  background: #fffaf3;
+  border: 1px solid rgba(18, 45, 105, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 22px 48px rgba(13, 18, 29, 0.22);
+  padding: 20px 18px 16px;
+  color: var(--text);
+}
+
+.save-progress-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.12rem;
+  color: var(--primary);
+}
+
+.save-progress-card p {
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.save-progress-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.primary-btn,
+.secondary-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background: #163d8d;
+  color: white;
+}
+
+.secondary-btn {
+  background: #eef1f7;
+  color: var(--text);
 }
 
 @media (max-width: 420px) {

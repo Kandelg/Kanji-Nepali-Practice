@@ -70,6 +70,16 @@
               <span>Saved</span>
             </button>
           </nav>
+
+          <div class="menu-footer">
+            <a
+              class="menu-feedback"
+              href="mailto:info@kandelg.com.np?subject=Kanji%20Practice%20Feedback"
+            >
+              <span class="menu-feedback-label">Feedback:</span>
+              <span class="menu-feedback-mail">info@kandelg.com.np</span>
+            </a>
+          </div>
         </aside>
 
         <main class="screen-content">
@@ -104,7 +114,7 @@
 
             <div class="practice-note">
               <div class="answer-options" aria-label="Choose the correct hiragana answer">
-                <button class="answer-option correct" type="button">ご</button>
+                <button class="answer-option" type="button">ご</button>
                 <button class="answer-option" type="button">はなす</button>
                 <button class="answer-option" type="button">しずか</button>
                 <button class="answer-option" type="button">かんじ</button>
@@ -129,17 +139,6 @@
               <span class="icon">⏭️</span>
               <span>次</span>
             </button>
-          </div>
-
-          <div class="feedback-link-wrap">
-            <span class="feedback-label">Feedback:</span>
-            <a
-              href="https://mail.google.com/mail/?view=cm&fs=1&to=info@kandelg.com.np"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              info@kandelg.com.np
-            </a>
           </div>
         </main>
 
@@ -203,6 +202,22 @@
             <span class="toggle-knob"></span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <div class="progress-panel" id="progressPanel" aria-live="polite">
+      <div class="panel-top">
+        <h2>Progress</h2>
+        <button class="close-panel" id="closeProgressPanel" aria-label="Close progress">×</button>
+      </div>
+      <div class="progress-body">
+        <p class="progress-subtitle">Last 15 days · first attempt</p>
+        <div class="progress-hero">
+          <span class="progress-hero-number" id="progressTotal">0</span>
+          <span class="progress-hero-label">kanji picked right on first attempt</span>
+        </div>
+        <div class="progress-trend" id="progressTrend"></div>
+        <p class="progress-comment" id="progressComment"></p>
       </div>
     </div>
 

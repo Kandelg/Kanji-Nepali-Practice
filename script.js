@@ -4,6 +4,8 @@ const sideMenu = document.getElementById('sideMenu');
 const screenContent = document.querySelector('.screen-content');
 const settingsPanel = document.getElementById('settingsPanel');
 const closePanel = document.getElementById('closePanel');
+const progressPanel = document.getElementById('progressPanel');
+const closeProgressPanel = document.getElementById('closeProgressPanel');
 const saveProgressModal = document.getElementById('saveProgressModal');
 const saveProgressTitle = document.getElementById('saveProgressTitle');
 const saveProgressMessage = document.getElementById('saveProgressMessage');
@@ -25,6 +27,11 @@ const kanjiWord = document.querySelector('.kanji-word');
 const metaRows = document.querySelectorAll('.meta-row');
 const metaLabels = document.querySelectorAll('.meta-label');
 const answerButtons = document.querySelectorAll('.answer-option');
+const actionBarButtons = document.querySelectorAll('.action-button');
+let wrongAttempts = 0;
+let autoNextTimer = null;
+const AUTO_NEXT_DELAY = 4000;
+let currentKanjiChar = '';
 let n5Kanji = Array.isArray(window.KANJI_N5_DATA) ? window.KANJI_N5_DATA : [];
 let n4Kanji = Array.isArray(window.KANJI_N4_DATA) ? window.KANJI_N4_DATA : [];
 let n3Kanji = Array.isArray(window.KANJI_N3_DATA) ? window.KANJI_N3_DATA : [];
@@ -225,10 +232,135 @@ function saveSettings(next) {
   applySettings();
 }
 
+const FIRST_ATTEMPT_KEY = 'kanji-first-attempt-log';
+const MAX_FIRST_ATTEMPT_LOG = 5000;
+
+function dayKeyFromTime(time) {
+  const date = new Date(time);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function todayKey() {
+  return dayKeyFromTime(Date.now());
+}
+
+function getFirstAttemptLog() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(FIRST_ATTEMPT_KEY) || '[]');
+    return Array.isArray(stored) ? stored : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function logFirstAttemptResult(kanji, wasCorrect) {
+  try {
+    const log = getFirstAttemptLog();
+    log.push({
+      kanji: kanji || '',
+      correct: wasCorrect === true,
+      at: Date.now(),
+      day: todayKey()
+    });
+    const trimmed = log.slice(-MAX_FIRST_ATTEMPT_LOG);
+    localStorage.setItem(FIRST_ATTEMPT_KEY, JSON.stringify(trimmed));
+  } catch (error) {
+    // Ignore storage errors so practice never breaks.
+  }
+}
+
+function countFirstAttemptStats(days) {
+  const log = getFirstAttemptLog();
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  const recent = log.filter((entry) => entry && entry.at >= cutoff);
+  const seenKanji = new Set();
+  const forgottenKanji = new Set();
+  let firstTryCorrect = 0;
+
+  recent.forEach((entry) => {
+    if (entry.correct === true) {
+      firstTryCorrect += 1;
+      if (entry.kanji) seenKanji.add(entry.kanji);
+    } else if (entry.correct === false && entry.kanji) {
+      forgottenKanji.add(entry.kanji);
+    }
+  });
+
+  return {
+    attempts: recent.length,
+    firstTryCorrect,
+    masteredKanji: seenKanji.size,
+    forgottenKanji: [...forgottenKanji].filter((kanji) => !seenKanji.has(kanji))
+  };
+}
+
+function getYesterdayFirstAttemptCount() {
+  const log = getFirstAttemptLog();
+  const yesterday = dayKeyFromTime(Date.now() - 24 * 60 * 60 * 1000);
+  return log.filter((entry) => entry && entry.day === yesterday && entry.correct === true).length;
+}
+
+function getTodayFirstAttemptCount() {
+  const log = getFirstAttemptLog();
+  const today = todayKey();
+  return log.filter((entry) => entry && entry.day === today && entry.correct === true).length;
+}
+
+function getProgressComment(diff, forgottenCount) {
+  if (diff > 0) {
+    return `Amazing! You are up by ${diff} from yesterday — keep the streak going! 🚀`;
+  }
+  if (diff < 0) {
+    const forgotText = forgottenCount > 0 ? ` You forgot ${forgottenCount} kanji which you picked right on first attempt before — review them once!` : '';
+    return `Down by ${Math.abs(diff)} from yesterday. No worries, small steps every day! 💪${forgotText}`;
+  }
+  if (forgottenCount > 0) {
+    return `Same as yesterday. You forgot ${forgottenCount} kanji which you picked at first attempt before — a quick review will fix it! 📚`;
+  }
+  return 'Same as yesterday — steady pace! One more round and you will climb. ✨';
+}
+
+function renderProgressPanel() {
+  const totalEl = document.getElementById('progressTotal');
+  const trendEl = document.getElementById('progressTrend');
+  const commentEl = document.getElementById('progressComment');
+  if (!totalEl || !trendEl || !commentEl) return;
+
+  const stats = countFirstAttemptStats(15);
+  const todayCount = getTodayFirstAttemptCount();
+  const yesterdayCount = getYesterdayFirstAttemptCount();
+  const diff = todayCount - yesterdayCount;
+
+  totalEl.textContent = String(stats.firstTryCorrect);
+
+  let trendClass = 'flat';
+  let trendText = `━ Same as yesterday (${yesterdayCount})`;
+  if (diff > 0) {
+    trendClass = 'up';
+    trendText = `▲ Up by ${diff} from yesterday (${yesterdayCount})`;
+  } else if (diff < 0) {
+    trendClass = 'down';
+    trendText = `▼ Down by ${Math.abs(diff)} from yesterday (${yesterdayCount})`;
+  }
+  trendEl.className = `progress-trend ${trendClass}`;
+  trendEl.textContent = trendText;
+
+  commentEl.textContent = getProgressComment(diff, stats.forgottenKanji.length);
+}
+
 function getSavedSessions() {
   try {
     const stored = JSON.parse(localStorage.getItem('kanji-saved-sessions') || '[]');
-    return Array.isArray(stored) ? stored : [];
+    if (!Array.isArray(stored)) return [];
+    if (stored.length > 4) {
+      const trimmed = stored.slice(0, 4);
+      localStorage.setItem('kanji-saved-sessions', JSON.stringify(trimmed));
+      return trimmed;
+    }
+    return stored;
   } catch (error) {
     return [];
   }
@@ -246,7 +378,7 @@ function saveSessionToList(session) {
   };
 
   const sessions = getSavedSessions();
-  const merged = [nextSession, ...sessions.filter((item) => item.id !== nextSession.id)].slice(0, 8);
+  const merged = [nextSession, ...sessions.filter((item) => item.id !== nextSession.id)].slice(0, 4);
   localStorage.setItem('kanji-saved-sessions', JSON.stringify(merged));
   renderSavedSessions();
 }
@@ -400,11 +532,19 @@ function hideSaveProgressPrompt() {
 }
 
 window.addEventListener('beforeunload', (event) => {
+  const activeElement = document.activeElement;
+  const isFeedbackClick =
+    (activeElement && activeElement.closest && activeElement.closest('.menu-feedback')) ||
+    (event.target && event.target.closest && event.target.closest('.menu-feedback'));
+
+  if (isFeedbackClick) {
+    return;
+  }
+
   saveProgressSnapshot();
   const message = 'Save your Kanji practice progress before closing?';
   event.preventDefault();
   event.returnValue = message;
-  showSaveProgressPrompt();
   return message;
 });
 
@@ -457,6 +597,20 @@ closePanel.addEventListener('click', () => {
   settingsPanel.classList.remove('is-open');
 });
 
+if (closeProgressPanel && progressPanel) {
+  closeProgressPanel.addEventListener('click', () => {
+    progressPanel.classList.remove('is-open');
+  });
+}
+
+if (progressPanel) {
+  progressPanel.addEventListener('click', (event) => {
+    if (event.target === progressPanel) {
+      progressPanel.classList.remove('is-open');
+    }
+  });
+}
+
 if (savedSessionPanel) {
   savedSessionPanel.addEventListener('click', (event) => {
     if (event.target === savedSessionPanel) {
@@ -472,6 +626,16 @@ menuItems.forEach((item) => {
 
     if (item.dataset.panel === 'settings') {
       settingsPanel.classList.add('is-open');
+      if (progressPanel) progressPanel.classList.remove('is-open');
+      savedSessionPanel.classList.remove('is-open');
+      sideMenu.classList.remove('is-open');
+      return;
+    }
+
+    if (item.dataset.panel === 'progress') {
+      renderProgressPanel();
+      if (progressPanel) progressPanel.classList.add('is-open');
+      settingsPanel.classList.remove('is-open');
       savedSessionPanel.classList.remove('is-open');
       sideMenu.classList.remove('is-open');
       return;
@@ -481,6 +645,7 @@ menuItems.forEach((item) => {
       renderSavedSessions();
       savedSessionPanel.classList.add('is-open');
       settingsPanel.classList.remove('is-open');
+      if (progressPanel) progressPanel.classList.remove('is-open');
       sideMenu.classList.remove('is-open');
       return;
     }
@@ -488,6 +653,7 @@ menuItems.forEach((item) => {
     if (item.dataset.panel === 'home') {
       savedSessionPanel.classList.remove('is-open');
       settingsPanel.classList.remove('is-open');
+      if (progressPanel) progressPanel.classList.remove('is-open');
     }
 
     sideMenu.classList.remove('is-open');
@@ -535,6 +701,11 @@ const revealTranslation = () => {
 };
 
 function renderQuizCard() {
+  if (autoNextTimer) {
+    clearTimeout(autoNextTimer);
+    autoNextTimer = null;
+  }
+
   const currentPool = getCurrentKanjiPool();
   if (!currentPool || currentPool.length === 0) {
     if (kanjiWord) kanjiWord.textContent = '—';
@@ -543,6 +714,8 @@ function renderQuizCard() {
   }
 
   const card = currentPool[Math.floor(Math.random() * currentPool.length)];
+
+  currentKanjiChar = card.kanji || '';
 
   if (kanjiWord) {
     kanjiWord.textContent = card.kanji || '—';
@@ -591,10 +764,10 @@ function renderQuizCard() {
     button.textContent = choices[index] || '';
     button.disabled = false;
     button.classList.remove('correct', 'wrong', 'selected');
-    if (button.textContent === card.reading) {
-      button.classList.add('correct');
-    }
+    button.dataset.isCorrect = button.textContent === card.reading ? 'true' : 'false';
   });
+
+  wrongAttempts = 0;
 
   if (kanjiMeta) {
     kanjiMeta.classList.add('hidden');
@@ -705,29 +878,58 @@ async function loadKanjiData() {
 
 answerButtons.forEach((button) => {
   button.addEventListener('click', () => {
-    revealTranslation();
+    if (button.disabled) return;
 
-    const correctButton = [...answerButtons].find((option) => option.classList.contains('correct'));
-
-    answerButtons.forEach((option) => {
-      option.disabled = true;
-      option.classList.remove('selected', 'wrong', 'correct');
-      if (option.textContent === (correctButton ? correctButton.textContent : '')) {
-        option.classList.add('correct');
+    const scheduleAutoNext = () => {
+      if (autoNextTimer) {
+        clearTimeout(autoNextTimer);
       }
-    });
+      autoNextTimer = setTimeout(() => {
+        autoNextTimer = null;
+        renderQuizCard();
+      }, AUTO_NEXT_DELAY);
+    };
 
-    button.classList.remove('correct');
-    if (button.textContent === (correctButton ? correctButton.textContent : '')) {
+    const correctButton = [...answerButtons].find((option) => option.dataset.isCorrect === 'true');
+
+    if (button.dataset.isCorrect === 'true') {
+      // Green hit -> lock everything + show meaning section + auto next
+      answerButtons.forEach((option) => {
+        option.disabled = true;
+      });
       button.classList.add('correct', 'selected');
+      revealTranslation();
+      scheduleAutoNext();
     } else {
+      // Wrong -> red only on clicked button, keep other 2 options clickable
+      wrongAttempts += 1;
+      button.disabled = true;
       button.classList.add('wrong', 'selected');
-      if (correctButton) {
-        correctButton.classList.add('correct', 'selected');
+
+      if (wrongAttempts >= 3) {
+        // 3rd attempt fail -> lock everything, show correct green + meaning section + auto next
+        answerButtons.forEach((option) => {
+          option.disabled = true;
+        });
+        if (correctButton) {
+          correctButton.classList.add('correct');
+        }
+        revealTranslation();
+        scheduleAutoNext();
       }
     }
   });
 });
+
+if (actionBarButtons.length >= 4) {
+  actionBarButtons[3].addEventListener('click', () => {
+    if (autoNextTimer) {
+      clearTimeout(autoNextTimer);
+      autoNextTimer = null;
+    }
+    renderQuizCard();
+  });
+}
 
 fontSizeRange.addEventListener('input', (event) => {
   saveSettings({ fontSize: Number(event.target.value) });

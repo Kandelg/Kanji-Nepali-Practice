@@ -12,6 +12,7 @@ const menuItems = document.querySelectorAll('.menu-item');
 const levelSelect = document.getElementById('levelSelect');
 const languageSelect = document.getElementById('languageSelect');
 const practiceTopLabel = document.getElementById('practiceTopLabel');
+const kanjiMeta = document.querySelector('.kanji-meta');
 
 const defaults = {
   theme: 'beige',
@@ -108,6 +109,19 @@ if (languageSelect) {
     saveSettings({ language: event.target.value });
   });
 }
+
+const revealTranslation = () => {
+  if (kanjiMeta) {
+    kanjiMeta.classList.remove('hidden');
+  }
+};
+
+const answerButtons = document.querySelectorAll('.answer-option');
+answerButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    revealTranslation();
+  });
+});
 
 fontSizeRange.addEventListener('input', (event) => {
   saveSettings({ fontSize: Number(event.target.value) });

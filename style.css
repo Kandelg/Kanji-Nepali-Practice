@@ -363,6 +363,10 @@ button, select, input {
   padding-left: 4px;
 }
 
+.kanji-meta.hidden {
+  display: none;
+}
+
 .meta-row {
   display: flex;
   justify-content: space-between;
@@ -384,23 +388,34 @@ button, select, input {
   text-align: center;
 }
 
-.practice-note p {
-  margin: 0 0 14px;
-  color: var(--muted);
-  font-size: 0.78rem;
+.answer-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 4px;
 }
 
-.writing-box {
-  width: 100%;
-  min-height: 110px;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.2));
-  border: 1px dashed rgba(18, 45, 105, 0.2);
-  border-radius: 18px;
-  font-size: 4rem;
+.answer-option {
+  border: 1px solid rgba(18, 45, 105, 0.15);
+  background: #ffffff;
   color: var(--primary);
+  border-radius: 12px;
+  min-height: 54px;
+  font-size: 1.1rem;
   font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.answer-option:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(18, 45, 105, 0.08);
+}
+
+.answer-option.correct {
+  background: #ebf9ee;
+  border-color: #52b578;
+  color: #1d6b3d;
 }
 
 .action-bar {

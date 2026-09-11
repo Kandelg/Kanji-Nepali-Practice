@@ -447,11 +447,22 @@ button, select, input {
   left: 0;
   right: 0;
   bottom: 76px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 8px 12px;
-  font-size: 0.68rem;
-  color: var(--muted);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.82);
   letter-spacing: 0.02em;
+  background: rgba(17, 23, 32, 0.1);
+  backdrop-filter: blur(6px);
+}
+
+.app-footer span {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .nav-item {

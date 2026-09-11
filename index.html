@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kanji Practice</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-theme="beige">
+    <div class="page-shell">
+      <div class="phone-frame">
+        <div class="phone-header">
+          <div class="header-left">
+            <button class="menu-button" id="menuButton" aria-label="Open menu">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            <div class="app-title">
+                <span>漢字練習</span>
+            </div>
+          </div>
+
+          <div class="header-right">
+            <label for="levelSelect" class="visually-hidden">Level</label>
+            <select id="levelSelect" class="level-select" aria-label="Select JLPT level">
+              <option value="N5">N5</option>
+              <option value="N4">N4</option>
+              <option value="N3">N3</option>
+              <option value="N2">N2</option>
+              <option value="N1">N1</option>
+            </select>
+
+            <label for="languageSelect" class="visually-hidden">Language</label>
+            <select id="languageSelect" class="language-select" aria-label="Select display language">
+              <option value="en">English</option>
+              <option value="phil">Filipino</option>
+              <option value="id">Indonesia</option>
+              <option value="ne">नेपाली</option>
+              <option value="ko">한국어</option>
+              <option value="vi">Tiếng Việt</option>
+            </select>
+          </div>
+        </div>
+
+        <aside class="side-menu" id="sideMenu" aria-label="Sidebar navigation">
+          <div class="menu-header">
+            <div class="avatar">漢</div>
+            <div>
+              <p class="menu-label">Study</p>
+              <h3>Kanji Practice</h3>
+            </div>
+          </div>
+
+          <nav class="menu-list">
+            <button class="menu-item active" data-panel="home">
+              <span>🏠</span>
+              <span>Home</span>
+            </button>
+            <button class="menu-item" data-panel="settings">
+              <span>⚙️</span>
+              <span>Settings</span>
+            </button>
+            <button class="menu-item" data-panel="progress">
+              <span>📈</span>
+              <span>Progress</span>
+            </button>
+            <button class="menu-item" data-panel="bookmarks">
+              <span>📚</span>
+              <span>Saved</span>
+            </button>
+          </nav>
+        </aside>
+
+        <main class="screen-content">
+          <div class="practice-topbar">
+            <span id="practiceTopLabel">今日の練習: N5 漢字</span>
+            <span class="lesson-count">1/5</span>
+          </div>
+
+          <div class="kanji-panel">
+            <div class="panel-row">
+              <span>書き方</span>
+              <span class="circle-badge">1</span>
+            </div>
+
+            <div class="kanji-body">
+              <div class="kanji-word">語</div>
+              <div class="kanji-meta">
+                <div class="meta-row">
+                  <span class="meta-label">読み</span>
+                  <span>ご</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">意味</span>
+                  <span>language</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">例</span>
+                  <span>日本語</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="practice-note">
+              <p>ここに書いてください</p>
+              <div class="writing-box">語</div>
+            </div>
+          </div>
+
+          <div class="action-bar">
+            <button class="action-button">
+              <span class="icon">✏️</span>
+              <span>写す</span>
+            </button>
+            <button class="action-button">
+              <span class="icon">🔊</span>
+              <span>読み</span>
+            </button>
+            <button class="action-button">
+              <span class="icon">💡</span>
+              <span>意味</span>
+            </button>
+            <button class="action-button">
+              <span class="icon">⏭️</span>
+              <span>次</span>
+            </button>
+          </div>
+        </main>
+
+        <nav class="bottom-nav" aria-label="Bottom navigation">
+          <button class="nav-item active">
+            <span>🏠</span>
+            <small>ホーム</small>
+          </button>
+          <button class="nav-item">
+            <span>📊</span>
+            <small>統計</small>
+          </button>
+          <button class="nav-item">
+            <span>📝</span>
+            <small>記録</small>
+          </button>
+          <button class="nav-item">
+            <span>⚙️</span>
+            <small>設定</small>
+          </button>
+        </nav>
+
+        <footer class="app-footer">
+          <span>Developed By : Kandelg</span>
+        </footer>
+      </div>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel" aria-live="polite">
+      <div class="panel-top">
+        <h2>Settings</h2>
+        <button class="close-panel" id="closePanel" aria-label="Close settings">×</button>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-item">
+          <label for="soundToggle">Sound</label>
+          <button class="toggle-switch active" id="soundToggle" type="button" aria-pressed="true">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+
+        <div class="setting-item">
+          <label for="backgroundSelect">Background color</label>
+          <select id="backgroundSelect">
+            <option value="beige">Warm beige</option>
+            <option value="dark">Dark night</option>
+            <option value="mint">Soft mint</option>
+            <option value="royal">Royal blue</option>
+          </select>
+        </div>
+
+        <div class="setting-item slider-item">
+          <label for="fontSizeRange">Font size</label>
+          <input id="fontSizeRange" type="range" min="14" max="26" value="18" />
+        </div>
+
+        <div class="setting-item">
+          <label for="vibrationToggle">Vibration</label>
+          <button class="toggle-switch active" id="vibrationToggle" type="button" aria-pressed="true">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

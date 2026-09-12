@@ -774,7 +774,14 @@ const revealTranslation = () => {
       soundOn = !(s && s.sound === false);
     } catch (e) { soundOn = true; }
     if (soundOn && typeof speakKanjiReading === 'function') {
-      setTimeout(() => { try { speakKanjiReading(true); } catch (e) { /* ignore */ } }, 300);
+      const kanjiAtReveal = currentKanjiChar;
+      setTimeout(() => {
+        try {
+          if (currentKanjiChar !== kanjiAtReveal) return;
+          if (kanjiMeta && kanjiMeta.classList.contains('hidden')) return;
+          speakKanjiReading(true);
+        } catch (e) { /* ignore */ }
+      }, 300);
     }
   } catch (error) { /* never break UI */ }
 };
@@ -1144,17 +1151,29 @@ function speakKanjiReading(skipLimit) {
       const s = loadSettings();
       if (s && s.sound === false) return;
     } catch (e) { /* ignore, still speak */ }
-    synth.cancel();
-    const utter = new SpeechSynthesisUtterance(text.trim());
-    utter.lang = 'ja-JP';
-    utter.rate = 0.85;
-    utter.pitch = 1;
-    try {
-      const voices = synth.getVoices ? synth.getVoices() : [];
-      const ja = voices.find((v) => (v.lang || '').toLowerCase().startsWith('ja'));
-      if (ja) utter.voice = ja;
-    } catch (e) { /* ignore */ }
-    synth.speak(utter);
+    const cleanText = text.trim();
+    let wasBusy = false;
+    try { wasBusy = !!(synth.speaking || synth.pending); } catch (e) { wasBusy = false; }
+    // NOTE: unconditional cancel() right before speak() swallows the new
+    // utterance on some Chrome builds — only cancel when something is playing.
+    try { if (wasBusy) synth.cancel(); } catch (e) { /* ignore */ }
+    const doSpeak = () => {
+      try {
+        const utter = new SpeechSynthesisUtterance(cleanText);
+        utter.lang = 'ja-JP';
+        utter.rate = 0.85;
+        utter.pitch = 1;
+        try {
+          const voices = synth.getVoices ? synth.getVoices() : [];
+          const ja = voices.find((v) => (v.lang || '').toLowerCase().startsWith('ja'));
+          if (ja) utter.voice = ja;
+        } catch (e) { /* ignore */ }
+        try { synth.resume(); } catch (e) { /* ignore */ }
+        synth.speak(utter);
+      } catch (e) { /* ignore */ }
+    };
+    if (wasBusy) setTimeout(doSpeak, 80);
+    else doSpeak();
     try { if (navigator.vibrate) navigator.vibrate(10); } catch (e) { /* ignore */ }
   } catch (error) { /* never break UI */ }
 }

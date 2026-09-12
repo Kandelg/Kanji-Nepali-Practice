@@ -101,7 +101,7 @@
                   <span class="meta-label">読み</span>
                   <span>ご</span>
                 </div>
-                <div class="meta-row">
+                <div class="meta-row meaning-row">
                   <span class="meta-label">意味</span>
                   <span>language</span>
                 </div>
@@ -113,6 +113,7 @@
             </div>
 
             <div class="practice-note">
+              <p class="hint-box" id="hintBox" hidden></p>
               <div class="answer-options" aria-label="Choose the correct hiragana answer">
                 <button class="answer-option" type="button">ご</button>
                 <button class="answer-option" type="button">はなす</button>
@@ -127,19 +128,21 @@
               <span class="icon">✏️</span>
               <span>写す</span>
             </button>
-            <button class="action-button">
-              <span class="icon">🔊</span>
-              <span>読み</span>
+            <button class="action-button speaker-button" aria-label="Listen pronunciation">
+              <span class="limit-badge" data-limit-badge="speaker">6</span>
+              <span class="icon speaker-icon">🔊</span>
             </button>
             <button class="action-button">
+              <span class="limit-badge" data-limit-badge="hint">6</span>
               <span class="icon">💡</span>
-              <span>意味</span>
+              <span>Hints</span>
             </button>
-            <button class="action-button">
-              <span class="icon">⏭️</span>
-              <span>次</span>
+            <button class="action-button next-button" aria-label="Next">
+              <span class="limit-badge" data-limit-badge="next">6</span>
+              <span class="icon next-icon"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5.5 12.5 12 5 18.5"/><path d="M12 5.5 19.5 12 12 18.5"/></svg></span>
             </button>
           </div>
+          <div class="limit-toast" id="limitToast" role="status" aria-live="polite"></div>
         </main>
 
         <nav class="bottom-nav" aria-label="Bottom navigation">
@@ -239,11 +242,38 @@
       </div>
     </div>
 
-    <script src="kanji-n5-data.js?v=20260911-2249"></script>
-    <script src="kanji-n4-data.js?v=20260911-2249"></script>
-    <script src="kanji-n3-data.js?v=20260911-2249"></script>
-    <script src="kanji-n2-data.js?v=20260911-2249"></script>
-    <script src="kanji-n1-data.js?v=20260911-2249"></script>
-    <script src="script.js?v=20260911-2249"></script>
+    <div class="stroke-modal" id="strokeModal" aria-live="polite" aria-hidden="true">
+      <div class="stroke-backdrop" id="strokeBackdrop"></div>
+      <div class="stroke-card" role="dialog" aria-modal="true" aria-labelledby="strokeTitle">
+        <div class="stroke-top">
+          <div>
+            <h3 id="strokeTitle">書き順</h3>
+            <p class="stroke-sub"><span id="strokeKanjiLabel">語</span> · stroke order</p>
+          </div>
+          <button class="close-panel stroke-close" id="strokeClose" aria-label="Close stroke order">×</button>
+        </div>
+        <div class="stroke-stage">
+          <svg id="strokeSvg" viewBox="0 0 109 109" aria-label="Kanji stroke order diagram"></svg>
+          <div class="stroke-loading" id="strokeLoading">Loading…</div>
+        </div>
+        <p class="stroke-count" id="strokeCount"></p>
+        <div class="stroke-controls">
+          <button type="button" class="stroke-btn" id="strokePrev" aria-label="Previous stroke">◀</button>
+          <button type="button" class="stroke-btn stroke-play" id="strokePlay" aria-label="Play stroke order">▶</button>
+          <button type="button" class="stroke-btn" id="strokeNext" aria-label="Next stroke">▶▶</button>
+          <button type="button" class="stroke-btn stroke-replay" id="strokeReplay" aria-label="Replay">↻</button>
+        </div>
+        <p class="stroke-note">Number = stroke order · Red = current stroke</p>
+      </div>
+    </div>
+
+    <script src="kanji-n5-data.js?v=20260912-02"></script>
+    <script src="kanji-n4-data.js?v=20260912-02"></script>
+    <script src="kanji-n3-data.js?v=20260912-02"></script>
+    <script src="kanji-n2-data.js?v=20260912-02"></script>
+    <script src="kanji-n1-data.js?v=20260912-02"></script>
+    <script src="kanji-meaning-i18n.js?v=20260912-02"></script>
+    <script src="kanji-hint-sentences.js?v=20260912-03"></script>
+    <script src="script.js?v=20260912-03"></script>
   </body>
 </html>

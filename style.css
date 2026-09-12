@@ -419,6 +419,44 @@ button, select, input {
   color: var(--muted);
 }
 
+/* Middle "meaning / artha" row — bold + distinct color + bigger font */
+.meaning-row {
+  background: rgba(179, 84, 0, 0.10);
+  border: 1.5px solid rgba(179, 84, 0, 0.45);
+  padding: 12px 14px;
+  align-items: center;
+}
+
+.meaning-row .meta-label {
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.meaning-row span:last-child {
+  color: #b35400;
+  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+body[data-theme="dark"] .meaning-row {
+  background: rgba(255, 196, 107, 0.12);
+  border-color: rgba(255, 196, 107, 0.55);
+}
+
+body[data-theme="dark"] .meaning-row span:last-child {
+  color: #ffc46b;
+}
+
+body[data-theme="mint"] .meaning-row span:last-child {
+  color: #0c5c46;
+}
+
+body[data-theme="royal"] .meaning-row span:last-child {
+  color: #c2410c;
+}
+
 .practice-note {
   margin-top: 18px;
   border-top: 1px solid var(--outline);
@@ -500,6 +538,121 @@ button, select, input {
 
 .icon {
   font-size: 1.3rem;
+}
+
+/* Hint box — kana-only simple sentence using just the shown kanji */
+.hint-box {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 193, 7, 0.14);
+  border: 1.5px dashed rgba(179, 84, 0, 0.55);
+  color: var(--text);
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+}
+
+body[data-theme="dark"] .hint-box {
+  background: rgba(255, 196, 107, 0.14);
+  border-color: rgba(255, 196, 107, 0.6);
+}
+
+/* Premium gradient icon-only NEXT button (no text label) */
+.next-button {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 55%, #06b6d4 100%);
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.next-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.next-button:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.next-button .next-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.next-button .next-icon svg {
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+body[data-theme="dark"] .next-button {
+  background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 55%, #22d3ee 100%);
+  box-shadow: 0 8px 22px rgba(59, 130, 246, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Usage-limit badges + finished toast */
+.action-button {
+  position: relative;
+}
+
+.limit-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(30, 58, 138, 0.9);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 22px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.action-button.is-limit-over {
+  opacity: 0.55;
+  filter: grayscale(0.35);
+}
+
+.action-button.is-limit-over .limit-badge {
+  background: rgba(185, 28, 28, 0.92);
+}
+
+.limit-toast {
+  margin-top: 10px;
+  min-height: 24px;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #b91c1c;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.limit-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body[data-theme="dark"] .limit-toast {
+  color: #fca5a5;
+}
+
+/* Big speaker-only button (no text label) */
+.speaker-button .speaker-icon {
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .bottom-nav {
@@ -821,4 +974,190 @@ input[type="range"] {
   .action-bar {
     gap: 8px;
   }
+}
+
+/* Stroke order modal (KanjiVG animation) */
+.stroke-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 70;
+}
+
+.stroke-modal.is-open {
+  display: flex;
+}
+
+.stroke-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 17, 28, 0.55);
+}
+
+.stroke-card {
+  position: relative;
+  width: min(360px, calc(100vw - 32px));
+  background: #fffdf8;
+  border: 1px solid rgba(18, 45, 105, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(13, 18, 29, 0.35);
+  padding: 18px 16px 16px;
+  color: var(--text);
+}
+
+.stroke-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.stroke-top h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--primary);
+}
+
+.stroke-sub {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.stroke-close {
+  background: #eef1f7;
+  color: #1d2430;
+}
+
+.stroke-stage {
+  position: relative;
+  border-radius: 14px;
+  background:
+    linear-gradient(rgba(22, 61, 141, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 61, 141, 0.08) 1px, transparent 1px),
+    #ffffff;
+  background-size: 22px 22px;
+  border: 1px solid rgba(18, 45, 105, 0.14);
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#strokeSvg {
+  width: 240px;
+  height: 240px;
+}
+
+#strokeSvg .kvg-stroke {
+  fill: none;
+  stroke: #1d2430;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#strokeSvg .kvg-stroke.done {
+  stroke: #94a3b8;
+}
+
+#strokeSvg .kvg-stroke.current {
+  stroke: #dc2626;
+  stroke-width: 4.5;
+  filter: drop-shadow(0 0 4px rgba(220, 38, 38, 0.45));
+}
+
+#strokeSvg .kvg-number {
+  font-size: 8px;
+  font-weight: 700;
+  fill: #1e3a8a;
+}
+
+.stroke-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.stroke-count {
+  margin: 10px 0 0;
+  text-align: center;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.stroke-controls {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr 1fr;
+  gap: 8px;
+}
+
+.stroke-btn {
+  border: 1px solid var(--outline);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  min-height: 46px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.stroke-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.stroke-play {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 55%, #06b6d4 100%);
+  border: none;
+  color: #ffffff;
+}
+
+.stroke-note {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+body[data-theme="dark"] .stroke-card {
+  background: #141b2b;
+  color: #f1f5f9;
+}
+
+body[data-theme="dark"] .stroke-stage {
+  background-color: #0b1220;
+}
+
+body[data-theme="dark"] #strokeSvg .kvg-stroke {
+  stroke: #e2e8f0;
+}
+
+body[data-theme="dark"] #strokeSvg .kvg-stroke.done {
+  stroke: #64748b;
+}
+
+body[data-theme="dark"] #strokeSvg .kvg-number {
+  fill: #93c5fd;
+}
+
+body[data-theme="dark"] .stroke-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+
+body[data-theme="dark"] .stroke-close {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }

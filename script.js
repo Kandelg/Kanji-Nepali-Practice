@@ -32,6 +32,11 @@ let wrongAttempts = 0;
 let autoNextTimer = null;
 const AUTO_NEXT_DELAY = 4000;
 let currentKanjiChar = '';
+// Pre-answer helper limits: each helper (speaker / hint / next) can be used
+// only 6 times per day BEFORE the answer (meaning) is revealed.
+const PRE_ANSWER_LIMIT = 6;
+const PRE_ANSWER_LIMIT_KEY = 'kanji-helper-limit-v1';
+let limitToastTimer = null;
 let n5Kanji = Array.isArray(window.KANJI_N5_DATA) ? window.KANJI_N5_DATA : [];
 let n4Kanji = Array.isArray(window.KANJI_N4_DATA) ? window.KANJI_N4_DATA : [];
 let n3Kanji = Array.isArray(window.KANJI_N3_DATA) ? window.KANJI_N3_DATA : [];
@@ -119,8 +124,12 @@ function normalizeLevelPayload(payload) {
 }
 
 function loadSettings() {
-  const saved = JSON.parse(localStorage.getItem('kanji-settings') || '{}');
-  return { ...defaults, ...saved };
+  try {
+    const saved = JSON.parse(localStorage.getItem('kanji-settings') || '{}');
+    return { ...defaults, ...(saved && typeof saved === 'object' ? saved : {}) };
+  } catch (error) {
+    return { ...defaults };
+  }
 }
 
 const languageLabels = {
@@ -142,27 +151,44 @@ const practiceLabels = {
 };
 
 const actionLabels = {
-  en: { write: 'Write', read: 'Read', meaning: 'Meaning', next: 'Next' },
-  phil: { write: 'Sumulat', read: 'Basahin', meaning: 'Kahulugan', next: 'Susunod' },
-  id: { write: 'Tulis', read: 'Baca', meaning: 'Arti', next: 'Berikutnya' },
-  ne: { write: 'लिख्नु', read: 'पढ्नु', meaning: 'अर्थ', next: 'अर्को' },
-  ko: { write: '쓰기', read: '읽기', meaning: '의미', next: '다음' },
-  vi: { write: 'Viết', read: 'Đọc', meaning: 'Ý nghĩa', next: 'Tiếp' }
+  en: { write: 'Write', read: 'Read', meaning: 'Hints', next: 'Next' },
+  phil: { write: 'Sumulat', read: 'Basahin', meaning: 'Pahiwatig', next: 'Susunod' },
+  id: { write: 'Tulis', read: 'Baca', meaning: 'Petunjuk', next: 'Berikutnya' },
+  ne: { write: 'लिख्नु', read: 'पढ्नु', meaning: 'संकेत', next: 'अर्को' },
+  ko: { write: '쓰기', read: '읽기', meaning: '힌트', next: '다음' },
+  vi: { write: 'Viết', read: 'Đọc', meaning: 'Gợi ý', next: 'Tiếp' }
 };
 
-const nepaliNumberMap = {
-  one: '१', two: '२', three: '३', four: '४', five: '५', six: '६', seven: '७', eight: '८', nine: '९', ten: '१०',
-  eleven: '११', twelve: '१२', thirteen: '१३', fourteen: '१४', fifteen: '१५', sixteen: '१६', seventeen: '१७', eighteen: '१८', nineteen: '१९', twenty: '२०'
-};
+function getMeaningCache() {
+  try {
+    return JSON.parse(localStorage.getItem('kanji-meaning-cache-v1') || '{}');
+  } catch (error) {
+    return {};
+  }
+}
+
+function setMeaningCache(cache) {
+  try {
+    const keys = Object.keys(cache);
+    const trimmed = {};
+    keys.slice(-800).forEach((key) => { trimmed[key] = cache[key]; });
+    localStorage.setItem('kanji-meaning-cache-v1', JSON.stringify(trimmed));
+  } catch (error) {
+    // Ignore quota errors so practice never breaks.
+  }
+}
 
 function localizedMeaning(value) {
   const language = (languageSelect && languageSelect.value) || 'en';
-  if (language !== 'ne' || typeof value !== 'string') {
-    return value;
+  if (typeof value !== 'string') return value;
+  if (language === 'en') return value;
+  const cache = getMeaningCache();
+  const cacheKey = `${language}|${value}`;
+  if (cache[cacheKey]) return cache[cacheKey];
+  if (typeof offlineTranslatedMeaning === 'function') {
+    return offlineTranslatedMeaning(value, language);
   }
-
-  const normalized = value.trim().toLowerCase();
-  return nepaliNumberMap[normalized] || value;
+  return value;
 }
 
 function updateMetaLabels() {
@@ -182,10 +208,15 @@ function updateActionLabels() {
 
   const actionButtons = document.querySelectorAll('.action-button');
   if (actionButtons.length >= 4) {
-    actionButtons[0].querySelector('span:last-child').textContent = labels.write;
-    actionButtons[1].querySelector('span:last-child').textContent = labels.read;
-    actionButtons[2].querySelector('span:last-child').textContent = labels.meaning;
-    actionButtons[3].querySelector('span:last-child').textContent = labels.next;
+    const writeLabel = actionButtons[0].querySelector('span:last-child');
+    if (writeLabel) writeLabel.textContent = labels.write;
+    const readLabel = actionButtons[1].querySelector('span:last-child');
+    if (readLabel && !actionButtons[1].classList.contains('speaker-button')) {
+      readLabel.textContent = labels.read;
+    }
+    const meaningLabel = actionButtons[2].querySelector('span:last-child');
+    if (meaningLabel) meaningLabel.textContent = labels.meaning;
+    // Next button is icon-only (premium >> look) — never inject text or it wipes the SVG.
   }
 }
 
@@ -199,16 +230,28 @@ function updatePracticeTopLabel() {
 }
 
 function applySettings() {
-  const settings = loadSettings();
-  body.dataset.theme = settings.theme;
-  soundToggle.classList.toggle('active', settings.sound);
-  soundToggle.setAttribute('aria-pressed', String(settings.sound));
-  vibrationToggle.classList.toggle('active', settings.vibration);
-  vibrationToggle.setAttribute('aria-pressed', String(settings.vibration));
-  backgroundSelect.value = settings.theme;
-  fontSizeRange.value = settings.fontSize;
-  document.documentElement.style.setProperty('--kanji-font-size', `${settings.fontSize}px`);
-  document.documentElement.style.setProperty('--word-size', `${Math.max(64, settings.fontSize * 3.4)}px`);
+  let settings = null;
+  try {
+    settings = loadSettings();
+  } catch (error) {
+    settings = { ...defaults };
+  }
+  if (!settings || typeof settings !== 'object') settings = { ...defaults };
+  if (!body) return;
+  body.dataset.theme = settings.theme || defaults.theme;
+  if (soundToggle) {
+    soundToggle.classList.toggle('active', settings.sound !== false);
+    soundToggle.setAttribute('aria-pressed', String(settings.sound !== false));
+  }
+  if (vibrationToggle) {
+    vibrationToggle.classList.toggle('active', settings.vibration !== false);
+    vibrationToggle.setAttribute('aria-pressed', String(settings.vibration !== false));
+  }
+  if (backgroundSelect) backgroundSelect.value = settings.theme || defaults.theme;
+  if (fontSizeRange) fontSizeRange.value = settings.fontSize || defaults.fontSize;
+  const fontSize = Number(settings.fontSize) || defaults.fontSize;
+  document.documentElement.style.setProperty('--kanji-font-size', `${fontSize}px`);
+  document.documentElement.style.setProperty('--word-size', `${Math.max(64, fontSize * 3.4)}px`);
 
   if (levelSelect) {
     const levelValue = ['N5', 'N4', 'N3', 'N2', 'N1'].includes(settings.level) ? settings.level : 'N5';
@@ -219,10 +262,10 @@ function applySettings() {
     languageSelect.value = settings.language || 'en';
   }
 
-  updatePracticeTopLabel();
-  updateMetaLabels();
-  updateActionLabels();
-  renderQuizCard();
+  try { updatePracticeTopLabel(); } catch (error) { /* keep UI alive */ }
+  try { updateMetaLabels(); } catch (error) { /* keep UI alive */ }
+  try { updateActionLabels(); } catch (error) { /* keep UI alive */ }
+  try { renderQuizCard(); } catch (error) { /* keep UI alive */ }
 }
 
 function saveSettings(next) {
@@ -563,28 +606,44 @@ if (saveProgressNo) {
     if (saveProgressModal && saveProgressModal.classList.contains('is-open')) {
       const titleText = saveProgressTitle ? saveProgressTitle.textContent : '';
       if (titleText.includes('Resume')) {
-        localStorage.removeItem('kanji-progress');
+        try { localStorage.removeItem('kanji-progress'); } catch (error) { /* ignore */ }
       }
     }
     hideSaveProgressPrompt();
+    try { renderQuizCard(); } catch (error) { /* keep UI alive */ }
   });
-}
-
-applySettings();
-if (Object.keys(loadProgressSnapshot()).length > 0) {
-  setTimeout(() => showResumeProgressPrompt(), 200);
 } else {
-  renderQuizCard();
+  // If modal buttons are missing, never block startup quiz rendering.
+  try { hideSaveProgressPrompt(); } catch (error) { /* ignore */ }
 }
 
-loadKanjiData();
+try {
+  applySettings();
+} catch (error) { /* keep UI alive so buttons still bind below */ }
+try {
+  if (Object.keys(loadProgressSnapshot()).length > 0) {
+    setTimeout(() => showResumeProgressPrompt(), 200);
+  } else {
+    renderQuizCard();
+  }
+} catch (error) {
+  try { renderQuizCard(); } catch (innerError) { /* ignore */ }
+}
 
-menuButton.addEventListener('click', () => {
+try {
+  if (typeof loadKanjiData === 'function') loadKanjiData();
+} catch (error) { /* offline data already available */ }
+
+if (menuButton && sideMenu) {
+menuButton.addEventListener('click', (event) => {
+  if (event) event.stopPropagation();
   sideMenu.classList.toggle('is-open');
 });
+}
 
 document.addEventListener('click', (event) => {
   const target = event.target;
+  if (!sideMenu || !menuButton) return;
   const clickedInsideMenu = sideMenu.contains(target);
   const clickedMenuButton = menuButton.contains(target);
 
@@ -593,9 +652,11 @@ document.addEventListener('click', (event) => {
   }
 });
 
+if (closePanel && settingsPanel) {
 closePanel.addEventListener('click', () => {
   settingsPanel.classList.remove('is-open');
 });
+}
 
 if (closeProgressPanel && progressPanel) {
   closeProgressPanel.addEventListener('click', () => {
@@ -660,19 +721,25 @@ menuItems.forEach((item) => {
   });
 });
 
+if (soundToggle) {
 soundToggle.addEventListener('click', () => {
   const enabled = !soundToggle.classList.contains('active');
   saveSettings({ sound: enabled });
 });
+}
 
+if (vibrationToggle) {
 vibrationToggle.addEventListener('click', () => {
   const enabled = !vibrationToggle.classList.contains('active');
   saveSettings({ vibration: enabled });
 });
+}
 
+if (backgroundSelect) {
 backgroundSelect.addEventListener('change', (event) => {
   saveSettings({ theme: event.target.value });
 });
+}
 
 if (levelSelect) {
   const updateLevel = (val) => {
@@ -698,7 +765,141 @@ const revealTranslation = () => {
   if (kanjiMeta) {
     kanjiMeta.classList.remove('hidden');
   }
+  try { refreshHelperLimitUI(); } catch (e) { /* ignore */ }
+  // If Settings > Sound is ON, auto-play kanji pronunciation when meaning shows.
+  try {
+    let soundOn = true;
+    try {
+      const s = loadSettings();
+      soundOn = !(s && s.sound === false);
+    } catch (e) { soundOn = true; }
+    if (soundOn && typeof speakKanjiReading === 'function') {
+      setTimeout(() => { try { speakKanjiReading(true); } catch (e) { /* ignore */ } }, 300);
+    }
+  } catch (error) { /* never break UI */ }
 };
+
+function isAnswerRevealed() {
+  try {
+    return !!(kanjiMeta && !kanjiMeta.classList.contains('hidden'));
+  } catch (e) { return false; }
+}
+
+function getHelperUsage() {
+  const day = (typeof todayKey === 'function') ? todayKey() : '';
+  try {
+    const stored = JSON.parse(localStorage.getItem(PRE_ANSWER_LIMIT_KEY) || '{}');
+    if (stored && typeof stored === 'object' && stored.day === day && stored.used && typeof stored.used === 'object') {
+      return { day, used: { speaker: Number(stored.used.speaker) || 0, hint: Number(stored.used.hint) || 0, next: Number(stored.used.next) || 0 } };
+    }
+  } catch (e) { /* fall through */ }
+  return { day, used: { speaker: 0, hint: 0, next: 0 } };
+}
+
+function setHelperUsage(used) {
+  try {
+    const day = (typeof todayKey === 'function') ? todayKey() : '';
+    localStorage.setItem(PRE_ANSWER_LIMIT_KEY, JSON.stringify({ day, used }));
+  } catch (e) { /* never break UI */ }
+}
+
+function remainingHelperUses(kind) {
+  const { used } = getHelperUsage();
+  return Math.max(0, PRE_ANSWER_LIMIT - (Number(used[kind]) || 0));
+}
+
+function showLimitToast(message) {
+  try {
+    const toast = document.getElementById('limitToast');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    if (limitToastTimer) clearTimeout(limitToastTimer);
+    limitToastTimer = setTimeout(() => { toast.classList.remove('show'); }, 2200);
+  } catch (e) { /* ignore */ }
+}
+
+function refreshHelperLimitUI() {
+  try {
+    const { used } = getHelperUsage();
+    const revealed = isAnswerRevealed();
+    document.querySelectorAll('[data-limit-badge]').forEach((badge) => {
+      const kind = badge.getAttribute('data-limit-badge');
+      const left = Math.max(0, PRE_ANSWER_LIMIT - (Number(used[kind]) || 0));
+      badge.textContent = revealed ? '∞' : String(left);
+    });
+    if (actionBarButtons && typeof actionBarButtons.forEach === 'function') {
+      // actionBarButtons: [write, speaker, hint, next]
+      const map = [null, 'speaker', 'hint', 'next'];
+      actionBarButtons.forEach((btn, idx) => {
+        if (!btn || !map[idx]) return;
+        const left = Math.max(0, PRE_ANSWER_LIMIT - (Number(used[map[idx]]) || 0));
+        btn.classList.toggle('is-limit-over', !revealed && left <= 0);
+      });
+    }
+  } catch (e) { /* never break UI */ }
+}
+
+// Returns true if helper may run now; consumes one daily use only when the
+// answer is still hidden. After reveal the helpers are unlimited.
+function tryConsumeHelperUse(kind) {
+  try {
+    if (isAnswerRevealed()) return true;
+    const { used } = getHelperUsage();
+    const left = Math.max(0, PRE_ANSWER_LIMIT - (Number(used[kind]) || 0));
+    if (left <= 0) {
+      showLimitToast("Today's limit finished.");
+      try { if (navigator.vibrate) navigator.vibrate([40, 40, 40]); } catch (e) { /* ignore */ }
+      refreshHelperLimitUI();
+      return false;
+    }
+    used[kind] = (Number(used[kind]) || 0) + 1;
+    setHelperUsage(used);
+    refreshHelperLimitUI();
+    return true;
+  } catch (e) { return true; }
+};
+
+let meaningRequestId = 0;
+
+async function fetchOnlineMeaning(value, language) {
+  const langMap = window.MEANING_API_LANG || {};
+  const apiLang = langMap[language] || 'en';
+  if (!value || language === 'en' || apiLang === 'en') return null;
+  const cacheKey = `${language}|${value}`;
+  try {
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(value)}&langpair=en|${apiLang}`
+    );
+    if (!res.ok) return null;
+    const payload = await res.json();
+    const translated = payload && payload.responseData && payload.responseData.translatedText;
+    if (!translated || /MYMEMORY WARNING|QUERY LENGTH LIMIT|INVALID/i.test(translated)) return null;
+    const cache = getMeaningCache();
+    cache[cacheKey] = translated;
+    setMeaningCache(cache);
+    return translated;
+  } catch (error) {
+    return null;
+  }
+}
+
+function enhanceMeaningTranslation(card) {
+  if (!card || !metaRows || metaRows.length < 3) return;
+  const language = (languageSelect && languageSelect.value) || 'en';
+  const source = card.meaning || '';
+  if (language === 'en' || !source) return;
+  const requestId = ++meaningRequestId;
+  const valueEl = metaRows[1] && metaRows[1].children ? metaRows[1].children[1] : null;
+  if (!valueEl) return;
+  fetchOnlineMeaning(source, language).then((translated) => {
+    if (requestId !== meaningRequestId) return;
+    if (!translated) return;
+    if ((languageSelect && languageSelect.value) !== language) return;
+    if (currentKanjiChar !== (card.kanji || '')) return;
+    valueEl.textContent = translated;
+  });
+}
 
 function renderQuizCard() {
   if (autoNextTimer) {
@@ -716,6 +917,11 @@ function renderQuizCard() {
   const card = currentPool[Math.floor(Math.random() * currentPool.length)];
 
   currentKanjiChar = card.kanji || '';
+  try { window.__currentQuizCard = card; } catch (e) { /* ignore */ }
+  try {
+    const hintBoxEl = document.getElementById('hintBox');
+    if (hintBoxEl) { hintBoxEl.hidden = true; hintBoxEl.textContent = ''; hintBoxEl.dataset.kanji = ''; }
+  } catch (e) { /* ignore */ }
 
   if (kanjiWord) {
     kanjiWord.textContent = card.kanji || '—';
@@ -725,6 +931,7 @@ function renderQuizCard() {
     metaRows[0].children[1].textContent = card.reading || '—';
     metaRows[1].children[1].textContent = localizedMeaning(card.meaning) || '—';
     metaRows[2].children[1].textContent = card.example || '—';
+    enhanceMeaningTranslation(card);
   }
 
   const allPools = [n5Kanji, n4Kanji, n3Kanji, n2Kanji, n1Kanji]
@@ -772,6 +979,7 @@ function renderQuizCard() {
   if (kanjiMeta) {
     kanjiMeta.classList.add('hidden');
   }
+  try { refreshHelperLimitUI(); } catch (e) { /* ignore */ }
 }
 
 async function loadLevelFromPublicSource(levelName) {
@@ -921,8 +1129,293 @@ answerButtons.forEach((button) => {
   });
 });
 
+function speakKanjiReading(skipLimit) {
+  try {
+    // Gated by daily pre-answer limit unless bypassed (auto-play after reveal).
+    if (skipLimit !== true && typeof tryConsumeHelperUse === 'function') {
+      if (!tryConsumeHelperUse('speaker')) return;
+    }
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    const card = (typeof window !== 'undefined' && window.__currentQuizCard) || null;
+    const text = (card && card.reading) || currentKanjiChar || (kanjiWord ? kanjiWord.textContent : '');
+    if (!text || !text.trim()) return;
+    try {
+      const s = loadSettings();
+      if (s && s.sound === false) return;
+    } catch (e) { /* ignore, still speak */ }
+    synth.cancel();
+    const utter = new SpeechSynthesisUtterance(text.trim());
+    utter.lang = 'ja-JP';
+    utter.rate = 0.85;
+    utter.pitch = 1;
+    try {
+      const voices = synth.getVoices ? synth.getVoices() : [];
+      const ja = voices.find((v) => (v.lang || '').toLowerCase().startsWith('ja'));
+      if (ja) utter.voice = ja;
+    } catch (e) { /* ignore */ }
+    synth.speak(utter);
+    try { if (navigator.vibrate) navigator.vibrate(10); } catch (e) { /* ignore */ }
+  } catch (error) { /* never break UI */ }
+}
+
+function toggleHintSentence() {
+  try {
+    const box = document.getElementById('hintBox');
+    if (!box) return;
+    if (!box.hidden && box.dataset.kanji === currentKanjiChar && box.textContent) {
+      box.hidden = true;
+      return;
+    }
+    // Opening a hint consumes one daily pre-answer use (unlimited after reveal).
+    if (typeof tryConsumeHelperUse === 'function') {
+      if (!tryConsumeHelperUse('hint')) return;
+    }
+    const card = (typeof window !== 'undefined' && window.__currentQuizCard) || null;
+    let sentence = '';
+    try {
+      if (typeof window.buildHintSentence === 'function') sentence = window.buildHintSentence(card) || '';
+    } catch (e) { sentence = ''; }
+    if (!sentence && card && card.kanji) sentence = '「' + card.kanji + '」 という ことば です。';
+    if (!sentence) return;
+    box.textContent = '💡 ' + sentence;
+    box.dataset.kanji = currentKanjiChar;
+    box.hidden = false;
+    try { if (navigator.vibrate) navigator.vibrate(10); } catch (e) { /* ignore */ }
+  } catch (error) { /* never break UI */ }
+}
+
+// ---- Stroke order viewer (KanjiVG) ----
+const strokeState = { paths: [], current: 0, kanji: '', playTimer: null, cache: {} };
+
+function stopStrokePlay() {
+  try {
+    if (strokeState.playTimer) clearInterval(strokeState.playTimer);
+  } catch (e) { /* ignore */ }
+  strokeState.playTimer = null;
+  try {
+    const playBtn = document.getElementById('strokePlay');
+    if (playBtn) playBtn.textContent = '▶';
+  } catch (e) { /* ignore */ }
+}
+
+function paintStrokeFrame() {
+  try {
+    const svg = document.getElementById('strokeSvg');
+    const countEl = document.getElementById('strokeCount');
+    const prevBtn = document.getElementById('strokePrev');
+    const nextBtn = document.getElementById('strokeNext');
+    const total = strokeState.paths.length;
+    const shown = Math.max(0, Math.min(strokeState.current, total));
+    if (svg) {
+      const strokes = svg.querySelectorAll('.kvg-stroke');
+      strokes.forEach((el, idx) => {
+        el.classList.toggle('done', idx < shown - 1);
+        el.classList.toggle('current', idx === shown - 1);
+        el.style.display = idx < shown ? '' : 'none';
+      });
+      const numbers = svg.querySelectorAll('.kvg-number');
+      numbers.forEach((el, idx) => {
+        el.style.display = idx < shown ? '' : 'none';
+      });
+    }
+    if (countEl) countEl.textContent = total ? (shown + ' / ' + total + ' strokes') : '';
+    if (prevBtn) prevBtn.disabled = shown <= 1;
+    if (nextBtn) nextBtn.disabled = shown >= total;
+  } catch (e) { /* never break UI */ }
+}
+
+function renderStrokeSvg(paths) {
+  const svg = document.getElementById('strokeSvg');
+  if (!svg) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  paths.forEach((d) => {
+    try {
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d);
+      p.setAttribute('class', 'kvg-stroke');
+      svg.appendChild(p);
+    } catch (e) { /* ignore one bad stroke */ }
+  });
+  paths.forEach((d, idx) => {
+    try {
+      const m = /M\s*(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)/i.exec(d || '');
+      if (!m) return;
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('x', String(Number(m[1]) - 3));
+      t.setAttribute('y', String(Number(m[2]) - 3));
+      t.setAttribute('class', 'kvg-number');
+      t.textContent = String(idx + 1);
+      svg.appendChild(t);
+    } catch (e) { /* ignore */ }
+  });
+}
+
+function kanjiToCodepointHex(kanji) {
+  try {
+    const ch = String(kanji || '').trim().charAt(0);
+    if (!ch) return '';
+    const cp = ch.codePointAt(0);
+    if (!cp) return '';
+    return cp.toString(16).padStart(5, '0');
+  } catch (e) { return ''; }
+}
+
+async function fetchKanjiVgPaths(kanji) {
+  const code = kanjiToCodepointHex(kanji);
+  if (!code) return null;
+  if (strokeState.cache[code]) return strokeState.cache[code];
+  const urls = [
+    'https://cdn.jsdelivr.net/gh/KanjiVG/kanjivg@master/kanji/' + code + '.svg',
+    'https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/' + code + '.svg'
+  ];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: 'force-cache' });
+      if (!res.ok) continue;
+      const text = await res.text();
+      const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+      const found = Array.from(doc.querySelectorAll('path'))
+        .map((p) => p.getAttribute('d'))
+        .filter((d) => typeof d === 'string' && d.length > 4);
+      if (found.length > 0) {
+        strokeState.cache[code] = found;
+        return found;
+      }
+    } catch (e) { /* try next CDN */ }
+  }
+  return null;
+}
+
+async function openStrokeModal() {
+  try {
+    stopStrokePlay();
+    const modal = document.getElementById('strokeModal');
+    const loading = document.getElementById('strokeLoading');
+    const label = document.getElementById('strokeKanjiLabel');
+    const card = (typeof window !== 'undefined' && window.__currentQuizCard) || null;
+    const kanjiChar = (card && card.kanji) || currentKanjiChar || '';
+    if (!kanjiChar) {
+      showLimitToast('No kanji selected yet.');
+      return;
+    }
+    if (label) label.textContent = kanjiChar;
+    if (modal) {
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+    if (loading) loading.style.display = 'flex';
+    const paths = await fetchKanjiVgPaths(kanjiChar);
+    if (loading) loading.style.display = 'none';
+    const svg = document.getElementById('strokeSvg');
+    const countEl = document.getElementById('strokeCount');
+    if (!paths || !paths.length) {
+      if (svg) while (svg.firstChild) svg.removeChild(svg.firstChild);
+      if (countEl) countEl.textContent = 'Stroke data unavailable offline.';
+      showLimitToast('Stroke order needs internet once.');
+      return;
+    }
+    strokeState.paths = paths;
+    strokeState.kanji = kanjiChar;
+    renderStrokeSvg(paths);
+    playStrokeOrder();
+    try { if (navigator.vibrate) navigator.vibrate(10); } catch (e) { /* ignore */ }
+  } catch (error) { /* never break UI */ }
+}
+
+function playStrokeOrder() {
+  try {
+    stopStrokePlay();
+    const total = strokeState.paths.length;
+    if (!total) return;
+    const playBtn = document.getElementById('strokePlay');
+    strokeState.current = 0;
+    paintStrokeFrame();
+    if (playBtn) playBtn.textContent = '⏸';
+    strokeState.playTimer = setInterval(() => {
+      strokeState.current += 1;
+      paintStrokeFrame();
+      if (strokeState.current >= total) stopStrokePlay();
+    }, 650);
+  } catch (e) { /* never break UI */ }
+}
+
+function closeStrokeModal() {
+  try {
+    stopStrokePlay();
+    const modal = document.getElementById('strokeModal');
+    if (modal) {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  } catch (e) { /* never break UI */ }
+}
+
+try {
+  const strokeCloseBtn = document.getElementById('strokeClose');
+  if (strokeCloseBtn) strokeCloseBtn.addEventListener('click', closeStrokeModal);
+  const strokeBackdrop = document.getElementById('strokeBackdrop');
+  if (strokeBackdrop) strokeBackdrop.addEventListener('click', closeStrokeModal);
+  const strokePrev = document.getElementById('strokePrev');
+  if (strokePrev) strokePrev.addEventListener('click', () => {
+    try {
+      stopStrokePlay();
+      strokeState.current = Math.max(1, strokeState.current - 1);
+      paintStrokeFrame();
+    } catch (e) { /* ignore */ }
+  });
+  const strokeNext = document.getElementById('strokeNext');
+  if (strokeNext) strokeNext.addEventListener('click', () => {
+    try {
+      stopStrokePlay();
+      strokeState.current = Math.min(strokeState.paths.length, strokeState.current + 1);
+      paintStrokeFrame();
+    } catch (e) { /* ignore */ }
+  });
+  const strokePlay = document.getElementById('strokePlay');
+  if (strokePlay) strokePlay.addEventListener('click', () => {
+    try {
+      if (strokeState.playTimer) { stopStrokePlay(); return; }
+      if (strokeState.current >= strokeState.paths.length) playStrokeOrder();
+      else {
+        stopStrokePlay();
+        strokePlay.textContent = '⏸';
+        strokeState.playTimer = setInterval(() => {
+          strokeState.current += 1;
+          paintStrokeFrame();
+          if (strokeState.current >= strokeState.paths.length) stopStrokePlay();
+        }, 650);
+      }
+    } catch (e) { /* ignore */ }
+  });
+  const strokeReplay = document.getElementById('strokeReplay');
+  if (strokeReplay) strokeReplay.addEventListener('click', playStrokeOrder);
+} catch (e) { /* never break UI */ }
+
 if (actionBarButtons.length >= 4) {
+  // 1st button (✏️) — show stroke-order animation for the current kanji
+  try {
+    actionBarButtons[0].addEventListener('click', () => {
+      openStrokeModal();
+    });
+  } catch (e) { /* never break UI */ }
+  // 2nd button (🔊) — speak current kanji reading (Japanese pronunciation)
+  try {
+    actionBarButtons[1].addEventListener('click', () => {
+      speakKanjiReading();
+    });
+  } catch (e) { /* never break UI */ }
+  try {
+    actionBarButtons[2].addEventListener('click', () => {
+      toggleHintSentence();
+    });
+  } catch (e) { /* never break UI */ }
   actionBarButtons[3].addEventListener('click', () => {
+    // Skipping to next before answering consumes one daily pre-answer use.
+    if (typeof tryConsumeHelperUse === 'function') {
+      if (!tryConsumeHelperUse('next')) return;
+    }
     if (autoNextTimer) {
       clearTimeout(autoNextTimer);
       autoNextTimer = null;
@@ -931,22 +1424,31 @@ if (actionBarButtons.length >= 4) {
   });
 }
 
+if (fontSizeRange) {
 fontSizeRange.addEventListener('input', (event) => {
   saveSettings({ fontSize: Number(event.target.value) });
 });
+}
 navItems.forEach((item) => {
   item.addEventListener('click', () => {
     navItems.forEach((button) => button.classList.remove('active'));
     item.classList.add('active');
-    if (item.textContent.includes('設定') || item.textContent.includes('設定')) {
-      settingsPanel.classList.add('is-open');
+    if (item.textContent.includes('設定')) {
+      if (settingsPanel) settingsPanel.classList.add('is-open');
     }
   });
 });
 
-applySettings();
-if (Object.keys(loadProgressSnapshot()).length > 0) {
-  setTimeout(() => showResumeProgressPrompt(), 200);
-} else {
-  renderQuizCard();
+try {
+  applySettings();
+} catch (error) { /* keep UI alive */ }
+try { refreshHelperLimitUI(); } catch (error) { /* ignore */ }
+try {
+  if (Object.keys(loadProgressSnapshot()).length > 0) {
+    setTimeout(() => showResumeProgressPrompt(), 200);
+  } else {
+    renderQuizCard();
+  }
+} catch (error) {
+  try { renderQuizCard(); } catch (innerError) { /* ignore */ }
 }

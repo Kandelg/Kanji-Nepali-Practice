@@ -193,6 +193,21 @@ const practiceLabels = {
   vi: (level) => `Luyện tập hôm nay: ${level} Hán tự`
 };
 
+const streakTitles = {
+  en: (today, streak) => `Correct today: ${today} · Streak: ${streak}`,
+  phil: (today, streak) => `Tama ngayon: ${today} · Sunod-sunod: ${streak}`,
+  id: (today, streak) => `Benar hari ini: ${today} · Beruntun: ${streak}`,
+  ne: (today, streak) => `आज मिलेको: ${today} · लगातार: ${streak}`,
+  ko: (today, streak) => `오늘 정답: ${today} · 연속: ${streak}`,
+  vi: (today, streak) => `Đúng hôm nay: ${today} · Chuỗi: ${streak}`
+};
+
+function getStreakTitle(todayCount, streakCount) {
+  const activeLanguage = (languageSelect && languageSelect.value) || 'en';
+  const formatter = streakTitles[activeLanguage] || streakTitles.en;
+  return formatter(todayCount, streakCount);
+}
+
 const actionLabels = {
   en: { write: 'Write', read: 'Read', meaning: 'Hints', next: 'Next' },
   phil: { write: 'Sumulat', read: 'Basahin', meaning: 'Pahiwatig', next: 'Susunod' },
@@ -468,9 +483,11 @@ function refreshStreakBadge() {
     if (!badge) return;
     // Show TODAY's total first-attempt correct count (never resets to 0 on wrong).
     const count = getTodayFirstAttemptCount();
+    const streak = getCurrentStreak();
     const numEl = document.getElementById('streakNum');
     if (numEl) numEl.textContent = String(count);
-    badge.title = `आज मिलेको: ${count}`;
+    // Tooltip follows the selected language instead of always being Nepali.
+    badge.title = getStreakTitle(count, streak);
   } catch (e) { /* never break UI */ }
 }
 
@@ -571,6 +588,13 @@ function renderProgressPanel() {
 
   if (weeklyEl) {
     weeklyEl.textContent = getWeeklyProgressText(weekCount);
+  }
+
+  // Day-over-day comment (up/down vs yesterday + kanji worth a quick review).
+  const commentEl = document.getElementById('progressComment');
+  if (commentEl) {
+    const forgottenCount = Array.isArray(stats.forgottenKanji) ? stats.forgottenKanji.length : 0;
+    commentEl.textContent = getProgressComment(todayCount - yesterdayCount, forgottenCount);
   }
 }
 
@@ -1037,18 +1061,9 @@ if (saveProgressNo) {
   try { hideSaveProgressPrompt(); } catch (error) { /* ignore */ }
 }
 
-try {
-  applySettings();
-} catch (error) { /* keep UI alive so buttons still bind below */ }
-try {
-  if (Object.keys(loadProgressSnapshot()).length > 0) {
-    setTimeout(() => showResumeProgressPrompt(), 200);
-  } else {
-    renderQuizCard();
-  }
-} catch (error) {
-  try { renderQuizCard(); } catch (innerError) { /* ignore */ }
-}
+// NOTE: startup (applySettings + resume prompt + first card) runs exactly once,
+// at the very bottom of this file, after every handler above has been bound.
+// It used to run here as well, which queued the resume prompt twice.
 
 try {
   if (typeof loadKanjiData === 'function') loadKanjiData();
@@ -1104,12 +1119,30 @@ if (savedSessionPanel) {
   });
 }
 
+// Which bottom-nav tab belongs to each side-menu panel.
+const panelNavTab = {
+  home: '',
+  progress: 'stats',
+  saved: 'record',
+  settings: 'settings',
+  offline: 'offline'
+};
+
 function setActiveMenuItem(panel) {
   try {
-    if (!menuItems || menuItems.length === 0) return;
-    menuItems.forEach((button) => {
-      button.classList.toggle('active', button.dataset.panel === panel);
-    });
+    if (menuItems && menuItems.length > 0) {
+      menuItems.forEach((button) => {
+        button.classList.toggle('active', button.dataset.panel === panel);
+      });
+    }
+    // Keep the bottom nav highlight in sync too — closing a panel with × or the
+    // backdrop used to leave 統計 / 記録 looking selected.
+    if (navItems && navItems.length > 0) {
+      const activeTab = Object.prototype.hasOwnProperty.call(panelNavTab, panel) ? panelNavTab[panel] : '';
+      navItems.forEach((button) => {
+        button.classList.toggle('active', (button.getAttribute('data-nav-tab') || '') === activeTab);
+      });
+    }
   } catch (e) { /* ignore */ }
 }
 
@@ -1562,8 +1595,14 @@ function loadLocalJsonFallback(levelName, url) {
 }
 
 async function loadKanjiData() {
-  const sourceResults = await Promise.all(
+  // The bundled window.KANJI_*_DATA arrays are the curated source of truth: they
+  // ship with the app, work offline and are what tools/check-*.js validate. A
+  // level only falls back to the remote pool (and then to the local .json file)
+  // when its bundled data is missing — previously all five GitHub pools were
+  // downloaded and then silently overwritten by the bundled data.
+  await Promise.all(
     Object.keys(publicLevelSource).map(async (levelName) => {
+      if (loadLocalLevelFallback(levelName).length > 0) return;
       const publicPool = await loadLevelFromPublicSource(levelName);
       if (publicPool.length > 0) {
         if (levelName === 'N5') n5Kanji = publicPool;
@@ -1583,7 +1622,7 @@ async function loadKanjiData() {
     N1: 'kanji-n1-data.json'
   };
 
-  const fallbackResults = await Promise.all(
+  await Promise.all(
     Object.keys(fallbackSources).map(async (levelName) => {
       const fallbackPool = loadLocalLevelFallback(levelName);
       if (fallbackPool.length > 0) {

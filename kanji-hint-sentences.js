@@ -1,4 +1,9 @@
-/* Kana-only hint sentences — each uses ONLY the shown kanji, rest is hiragana/katakana. */
+/* Kana-only hint sentences — each uses ONLY the shown kanji, rest is hiragana/katakana.
+ * Data rules (validated by tools/check-hints.js):
+ *   1. one entry per kanji — a duplicate key silently overrides the earlier hint,
+ *   2. the sentence must contain its own kanji,
+ *   3. no other kanji may appear in the sentence,
+ *   4. every kanji in kanji-n5-data.json must have an entry here. */
 window.KANJI_HINT_MAP = {
   '日': 'きょうは いい 日 です。',
   '月': 'よるに 月 が みえます。',
@@ -38,14 +43,13 @@ window.KANJI_HINT_MAP = {
   '円': 'この 円 は まるい です。',
   '年': 'ことし は いい 年 です。',
   '半': '半ぶん です。',
-  '分': 'すこし の 分 です。',
   '時': 'いま の 時 を みます。',
   '人': 'やさしい 人 です。',
   '女': 'しんせつな 女 です。',
   '生': 'だいじな 生 です。',
   '子': 'げんきな 子 です。',
   '学': 'まいにち 学 が たのしい です。',
-  '先': 'さき に いきます。',
+  '先': 'わたし は 先 に いきます。',
   '白': '白い はな が すきです。',
   '口': 'おおきい 口 です。',
   '石': 'まるい 石 です。',
@@ -80,8 +84,6 @@ window.KANJI_HINT_MAP = {
   '北': 'こちら は 北 です。',
   '南': 'こちら は 南 です。',
   '外': '外 は さむい です。',
-  '駅': 'ちかい 駅 です。',
-  '会': 'あした 会います。',
   '内': 'はこ の 内 です。',
   '長': 'とても 長い です。',
   '高': 'とても 高い です。',
@@ -103,16 +105,11 @@ window.KANJI_HINT_MAP = {
   '今': '今 は あさ です。',
   '電': 'あかるい 電 です。',
   '国': 'うつくしい 国 です。',
-  '口': 'おおきい 口 です。',
-  '手': 'きれいな 手 です。',
-  '目': 'おおきい 目 です。',
   '立': 'いま 立 ちます。',
   '分': 'これ を 分 けます。',
   '少': 'ここ は 少 ない です。',
   '古': 'これは ふるい 古 です。',
-  '耳': 'ちいさい 耳 です。',
   '花': 'うつくしい 花 です。',
-  '足': 'はやい 足 です。',
   '会': 'ともだち に 会 います。',
   '多': 'ここ は 多 い です。',
   '社': 'しごと の 社 です。',
@@ -133,10 +130,10 @@ window.KANJI_HINT_MAP = {
 window.buildHintSentence = function (card) {
   try {
     if (!card || !card.kanji) return '';
-    var map = window.KANJI_HINT_MAP || {};
+    const map = window.KANJI_HINT_MAP || {};
     if (map[card.kanji]) return map[card.kanji];
-    var k = String(card.kanji);
-    var r = String(card.reading || '').trim();
+    const k = String(card.kanji);
+    const r = String(card.reading || '').trim();
     if (k.length === 1) {
       if (/^[\u3040-\u309F]+$/.test(r) && r.length <= 5) {
         return 'これは 「' + k + '」 です。よみかた は 「' + r + '」 です。';

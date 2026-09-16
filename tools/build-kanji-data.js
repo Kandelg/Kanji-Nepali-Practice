@@ -68,8 +68,11 @@ async function main() {
   keys.forEach((key) => {
     const item = kanjiJson[key] || {};
     const jlpt = item.jlpt_new || item.jlpt;
-    if (!byJlpt[jlpt]) return;
-    byJlpt[jlpt].push({ char: key, entry: item });
+    if (byJlpt[jlpt]) byJlpt[jlpt].push({ char: key, entry: item });
+    // Classic (pre-2010) JLPT level 4 kanji also belong to the N5 deck.
+    // This keeps N5 at the well known "First 103 kanji" size (modern tagging
+    // alone would give only 79), while the other levels stay on modern tags.
+    if (item.jlpt_old === 4 && jlpt !== 5) byJlpt[5].push({ char: key, entry: item });
   });
   console.log('Counts: ' + JSON.stringify({
     N5: byJlpt[5].length, N4: byJlpt[4].length, N3: byJlpt[3].length,

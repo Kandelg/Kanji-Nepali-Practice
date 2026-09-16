@@ -66,6 +66,12 @@
     "example": "下"
   },
   {
+    "kanji": "口",
+    "reading": "くち",
+    "meaning": "Mouth",
+    "example": "口"
+  },
+  {
     "kanji": "大",
     "reading": "おお",
     "meaning": "Large, Big",
@@ -144,6 +150,12 @@
     "example": "天気"
   },
   {
+    "kanji": "手",
+    "reading": "て",
+    "meaning": "Hand",
+    "example": "手"
+  },
+  {
     "kanji": "日",
     "reading": "にち",
     "meaning": "Day, Sun, Japan, Counter For Days",
@@ -210,6 +222,18 @@
     "example": "白い"
   },
   {
+    "kanji": "目",
+    "reading": "め",
+    "meaning": "Eye, Class, Look, Insight",
+    "example": "目"
+  },
+  {
+    "kanji": "立",
+    "reading": "た",
+    "meaning": "Stand Up, Rise, Set Up, Erect",
+    "example": "立つ"
+  },
+  {
     "kanji": "万",
     "reading": "まん",
     "meaning": "Ten Thousand, 10,000",
@@ -222,6 +246,12 @@
     "example": "今"
   },
   {
+    "kanji": "分",
+    "reading": "わける",
+    "meaning": "Part, Minute Of Time, Segment, Share",
+    "example": "分ける"
+  },
+  {
     "kanji": "午",
     "reading": "ご",
     "meaning": "Noon, Sign Of The Horse, 11am-1pm, Seventh Sign Of Chinese Zodiac",
@@ -232,6 +262,12 @@
     "reading": "とも",
     "meaning": "Friend",
     "example": "友だち"
+  },
+  {
+    "kanji": "少",
+    "reading": "すくない",
+    "meaning": "Few, Little",
+    "example": "少し"
   },
   {
     "kanji": "父",
@@ -250,6 +286,12 @@
     "reading": "はん",
     "meaning": "Half, Middle, Odd Number, Semi-",
     "example": "半分"
+  },
+  {
+    "kanji": "古",
+    "reading": "ふるい",
+    "meaning": "Old",
+    "example": "古い本"
   },
   {
     "kanji": "外",
@@ -300,10 +342,22 @@
     "example": "百円"
   },
   {
+    "kanji": "耳",
+    "reading": "みみ",
+    "meaning": "Ear",
+    "example": "耳"
+  },
+  {
     "kanji": "男",
     "reading": "おとこ",
     "meaning": "Male",
     "example": "男の子"
+  },
+  {
+    "kanji": "花",
+    "reading": "はな",
+    "meaning": "Flower",
+    "example": "花が咲く"
   },
   {
     "kanji": "見",
@@ -312,10 +366,28 @@
     "example": "見る"
   },
   {
+    "kanji": "足",
+    "reading": "あし",
+    "meaning": "Leg, Foot, Be Sufficient, Counter For Pairs Of Footwear",
+    "example": "足"
+  },
+  {
     "kanji": "車",
     "reading": "くるま",
     "meaning": "Car",
     "example": "電車"
+  },
+  {
+    "kanji": "会",
+    "reading": "あう",
+    "meaning": "Meeting, Meet, Party, Association",
+    "example": "会う"
+  },
+  {
+    "kanji": "多",
+    "reading": "おおい",
+    "meaning": "Many, Frequent, Much",
+    "example": "多くの人"
   },
   {
     "kanji": "毎",
@@ -348,10 +420,28 @@
     "example": "来る"
   },
   {
+    "kanji": "社",
+    "reading": "やしろ",
+    "meaning": "Company, Firm, Office, Association",
+    "example": "社"
+  },
+  {
+    "kanji": "言",
+    "reading": "げん",
+    "meaning": "Say, Word",
+    "example": "言語"
+  },
+  {
     "kanji": "学",
     "reading": "がく",
     "meaning": "Study, Learning, Science",
     "example": "学校"
+  },
+  {
+    "kanji": "空",
+    "reading": "そら",
+    "meaning": "Empty, Sky, Void, Vacant",
+    "example": "空"
   },
   {
     "kanji": "金",
@@ -366,10 +456,22 @@
     "example": "雨が降る"
   },
   {
+    "kanji": "安",
+    "reading": "やすい",
+    "meaning": "Relax, Cheap, Low, Quiet",
+    "example": "安い店"
+  },
+  {
     "kanji": "国",
     "reading": "くに",
     "meaning": "Country",
     "example": "国"
+  },
+  {
+    "kanji": "店",
+    "reading": "みせ",
+    "meaning": "Store, Shop",
+    "example": "店に行く"
   },
   {
     "kanji": "東",
@@ -426,6 +528,30 @@
     "example": "高い"
   },
   {
+    "kanji": "週",
+    "reading": "しゅう",
+    "meaning": "Week",
+    "example": "一週間"
+  },
+  {
+    "kanji": "魚",
+    "reading": "さかな",
+    "meaning": "Fish",
+    "example": "魚を食べる"
+  },
+  {
+    "kanji": "買",
+    "reading": "かう",
+    "meaning": "Buy",
+    "example": "本を買う"
+  },
+  {
+    "kanji": "道",
+    "reading": "みち",
+    "meaning": "Road-way, Street, District, Journey",
+    "example": "道を歩く"
+  },
+  {
     "kanji": "間",
     "reading": "あいだ",
     "meaning": "Interval, Space",
@@ -442,6 +568,12 @@
     "reading": "でん",
     "meaning": "Electricity",
     "example": "電車"
+  },
+  {
+    "kanji": "飲",
+    "reading": "のむ",
+    "meaning": "Drink, Smoke, Take",
+    "example": "水を飲む"
   },
   {
     "kanji": "聞",
@@ -466,6 +598,18 @@
     "reading": "せい",
     "meaning": "Life, Genuine, Birth",
     "example": "学生"
+  },
+  {
+    "kanji": "新",
+    "reading": "あたらしい",
+    "meaning": "New",
+    "example": "新しい店"
+  },
+  {
+    "kanji": "駅",
+    "reading": "えき",
+    "meaning": "Station",
+    "example": "駅"
   },
   {
     "kanji": "書",

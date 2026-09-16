@@ -17,6 +17,7 @@ const soundToggle = document.getElementById('soundToggle');
 const vibrationToggle = document.getElementById('vibrationToggle');
 const backgroundSelect = document.getElementById('backgroundSelect');
 const fontSizeRange = document.getElementById('fontSizeRange');
+const autoNextDelaySelect = document.getElementById('autoNextDelaySelect');
 const navItems = document.querySelectorAll('.nav-item');
 const menuItems = document.querySelectorAll('.menu-item');
 const levelSelect = document.getElementById('levelSelect');
@@ -30,7 +31,6 @@ const answerButtons = document.querySelectorAll('.answer-option');
 const actionBarButtons = document.querySelectorAll('.action-button');
 let wrongAttempts = 0;
 let autoNextTimer = null;
-const AUTO_NEXT_DELAY = 4000;
 let currentKanjiChar = '';
 // Pre-answer helper limits: each helper (speaker / hint / next) can be used
 // only 6 times per day BEFORE the answer (meaning) is revealed.
@@ -71,8 +71,20 @@ const defaults = {
   vibration: true,
   fontSize: 18,
   level: 'N5',
-  language: 'en'
+  language: 'en',
+  autoNextDelay: 4
 };
+
+const AUTO_NEXT_DELAY_OPTIONS = [3, 4, 5, 6];
+
+function getAutoNextDelay() {
+  try {
+    const s = loadSettings();
+    const v = Number(s && s.autoNextDelay);
+    if (AUTO_NEXT_DELAY_OPTIONS.includes(v)) return v * 1000;
+  } catch (e) { /* fall through to default */ }
+  return 4000;
+}
 
 const publicLevelSource = {
   N5: 'https://raw.githubusercontent.com/mochazi/kanji-on/main/web/data/n5.json',
@@ -249,6 +261,10 @@ function applySettings() {
   }
   if (backgroundSelect) backgroundSelect.value = settings.theme || defaults.theme;
   if (fontSizeRange) fontSizeRange.value = settings.fontSize || defaults.fontSize;
+  if (autoNextDelaySelect) {
+    const delayVal = Number(settings.autoNextDelay);
+    autoNextDelaySelect.value = AUTO_NEXT_DELAY_OPTIONS.includes(delayVal) ? String(delayVal) : String(defaults.autoNextDelay);
+  }
   const fontSize = Number(settings.fontSize) || defaults.fontSize;
   document.documentElement.style.setProperty('--kanji-font-size', `${fontSize}px`);
   document.documentElement.style.setProperty('--word-size', `${Math.max(64, fontSize * 3.4)}px`);
@@ -325,7 +341,6 @@ function countFirstAttemptStats(days) {
 
   recent.forEach((entry) => {
     if (entry.correct === true) {
-      firstTryCorrect += 1;
       if (entry.kanji) seenKanji.add(entry.kanji);
     } else if (entry.correct === false && entry.kanji) {
       forgottenKanji.add(entry.kanji);
@@ -334,22 +349,160 @@ function countFirstAttemptStats(days) {
 
   return {
     attempts: recent.length,
-    firstTryCorrect,
+    firstTryCorrect: seenKanji.size,
     masteredKanji: seenKanji.size,
     forgottenKanji: [...forgottenKanji].filter((kanji) => !seenKanji.has(kanji))
   };
 }
 
+function getTodayStartTime() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  start.setHours(0, 0, 0, 0);
+  return start.getTime();
+}
+
 function getYesterdayFirstAttemptCount() {
   const log = getFirstAttemptLog();
-  const yesterday = dayKeyFromTime(Date.now() - 24 * 60 * 60 * 1000);
-  return log.filter((entry) => entry && entry.day === yesterday && entry.correct === true).length;
+  const todayStart = getTodayStartTime();
+  const yesterdayStart = new Date(todayStart);
+  const yesterdayDate = new Date(yesterdayStart);
+  yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+  const yesterdayStartTime = yesterdayDate.getTime();
+  // Kanji already matched correctly BEFORE yesterday => not counted again.
+  const previouslyMastered = new Set();
+  log.forEach((entry) => {
+    if (entry && entry.correct === true && entry.kanji && entry.at < yesterdayStartTime) {
+      previouslyMastered.add(entry.kanji);
+    }
+  });
+  const uniqueKanji = new Set();
+  log.forEach((entry) => {
+    if (entry && entry.correct === true && entry.kanji &&
+        entry.at >= yesterdayStartTime && entry.at < todayStart &&
+        !previouslyMastered.has(entry.kanji)) {
+      uniqueKanji.add(entry.kanji);
+    }
+  });
+  return uniqueKanji.size;
 }
 
 function getTodayFirstAttemptCount() {
   const log = getFirstAttemptLog();
+  const todayStart = getTodayStartTime();
+  // Kanji already matched correctly BEFORE today => not counted again.
+  const previouslyMastered = new Set();
+  log.forEach((entry) => {
+    if (entry && entry.correct === true && entry.kanji && entry.at < todayStart) {
+      previouslyMastered.add(entry.kanji);
+    }
+  });
+  const uniqueKanji = new Set();
+  log.forEach((entry) => {
+    if (entry && entry.correct === true && entry.kanji &&
+        entry.at >= todayStart && !previouslyMastered.has(entry.kanji)) {
+      uniqueKanji.add(entry.kanji);
+    }
+  });
+  return uniqueKanji.size;
+}
+
+function getTodayAccuracyStats() {
+  // Accuracy = first-attempt correct / total first attempts, for TODAY.
+  const log = getFirstAttemptLog();
   const today = todayKey();
-  return log.filter((entry) => entry && entry.day === today && entry.correct === true).length;
+  const entries = log.filter((entry) => entry && entry.day === today && typeof entry.correct === 'boolean');
+  const total = entries.length;
+  const correct = entries.filter((entry) => entry.correct === true).length;
+  const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+  return { total, correct, percent };
+}
+
+function getCurrentStreak() {
+  // Trailing run of correct first attempts (across days, newest -> oldest).
+  const log = getFirstAttemptLog();
+  let streak = 0;
+  for (let i = log.length - 1; i >= 0; i -= 1) {
+    const entry = log[i];
+    if (!entry || typeof entry.correct !== 'boolean') continue;
+    if (entry.correct === true) streak += 1;
+    else break;
+  }
+  return streak;
+}
+
+function refreshStreakBadge() {
+  try {
+    const badge = document.getElementById('streakBadge');
+    if (!badge) return;
+    // Show TODAY's total first-attempt correct count (never resets to 0 on wrong).
+    const count = getTodayFirstAttemptCount();
+    const numEl = document.getElementById('streakNum');
+    if (numEl) numEl.textContent = String(count);
+    badge.title = `आज मिलेको: ${count}`;
+  } catch (e) { /* never break UI */ }
+}
+
+function getWeekStartTime() {
+  // Monday 00:00 local time = start of current week.
+  const now = new Date();
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const day = monday.getDay(); // 0=Sun ... 6=Sat
+  const diffToMonday = (day + 6) % 7;
+  monday.setDate(monday.getDate() - diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+  return monday.getTime();
+}
+
+function countWeekFirstAttempt() {
+  const log = getFirstAttemptLog();
+  const weekStart = getWeekStartTime();
+  // Kanji already matched correctly BEFORE this week => not new this week.
+  const previouslyMastered = new Set();
+  log.forEach((entry) => {
+    if (entry && entry.correct === true && entry.kanji && entry.at < weekStart) {
+      previouslyMastered.add(entry.kanji);
+    }
+  });
+  const uniqueKanji = new Set();
+  log.forEach((entry) => {
+    if (entry && entry.at >= weekStart && entry.correct === true && entry.kanji &&
+        !previouslyMastered.has(entry.kanji)) {
+      uniqueKanji.add(entry.kanji);
+    }
+  });
+  return uniqueKanji.size;
+}
+
+function getWeeklyProgressText(count) {
+  const lang = (languageSelect && languageSelect.value) || 'en';
+  // "जस्तो: तपाईंले यो हप्ता 50 ओटा कान्जी पहिलो प्रयासमै चिन्नुभयो"
+  switch (lang) {
+    case 'ne':
+      return count > 0
+        ? `🎉 तपाईंले यो हप्ता ${count} ओटा कान्जी पहिलो प्रयासमै चिन्नुभयो!`
+        : 'यो हप्ता अझै पहिलो प्रयासमै सही भएको छैन — अभ्यास जारी राख्नुहोस्! 💪';
+    case 'phil':
+      return count > 0
+        ? `🎉 Nakilala mo ang ${count} na kanji sa unang subok ngayong linggo!`
+        : 'Wala ka pang tamang sagot sa unang subok ngayong linggo — tuloy lang! 💪';
+    case 'id':
+      return count > 0
+        ? `🎉 Kamu mengenali ${count} kanji pada percobaan pertama minggu ini!`
+        : 'Belum ada jawaban benar pada percobaan pertama minggu ini — terus berlatih! 💪';
+    case 'ko':
+      return count > 0
+        ? `🎉 이번 주에 ${count}개의 한자를 첫 시도에 맞혔어요!`
+        : '이번 주에는 아직 첫 시도에 맞힌 한자가 없어요 — 계속 연습해요! 💪';
+    case 'vi':
+      return count > 0
+        ? `🎉 Tuần này bạn đã nhận đúng ${count} chữ kanji ngay từ lần thử đầu tiên!`
+        : 'Tuần này bạn chưa trả lời đúng ngay lần đầu — hãy tiếp tục luyện tập! 💪';
+    default:
+      return count > 0
+        ? `🎉 You recognized ${count} kanji on the first attempt this week!`
+        : 'No first-attempt correct answers yet this week — keep practicing! 💪';
+  }
 }
 
 function getProgressComment(diff, forgottenCount) {
@@ -368,30 +521,26 @@ function getProgressComment(diff, forgottenCount) {
 
 function renderProgressPanel() {
   const totalEl = document.getElementById('progressTotal');
-  const trendEl = document.getElementById('progressTrend');
-  const commentEl = document.getElementById('progressComment');
-  if (!totalEl || !trendEl || !commentEl) return;
+  const weeklyEl = document.getElementById('progressWeekly');
+  const todayEl = document.getElementById('progressToday');
+  const yesterdayEl = document.getElementById('progressYesterday');
+  const weekEl = document.getElementById('progressWeek');
+  if (!totalEl) return;
 
   const stats = countFirstAttemptStats(15);
   const todayCount = getTodayFirstAttemptCount();
   const yesterdayCount = getYesterdayFirstAttemptCount();
-  const diff = todayCount - yesterdayCount;
+  const weekCount = countWeekFirstAttempt();
 
   totalEl.textContent = String(stats.firstTryCorrect);
 
-  let trendClass = 'flat';
-  let trendText = `━ Same as yesterday (${yesterdayCount})`;
-  if (diff > 0) {
-    trendClass = 'up';
-    trendText = `▲ Up by ${diff} from yesterday (${yesterdayCount})`;
-  } else if (diff < 0) {
-    trendClass = 'down';
-    trendText = `▼ Down by ${Math.abs(diff)} from yesterday (${yesterdayCount})`;
-  }
-  trendEl.className = `progress-trend ${trendClass}`;
-  trendEl.textContent = trendText;
+  if (todayEl) todayEl.textContent = String(todayCount);
+  if (yesterdayEl) yesterdayEl.textContent = String(yesterdayCount);
+  if (weekEl) weekEl.textContent = String(weekCount);
 
-  commentEl.textContent = getProgressComment(diff, stats.forgottenKanji.length);
+  if (weeklyEl) {
+    weeklyEl.textContent = getWeeklyProgressText(weekCount);
+  }
 }
 
 function getSavedSessions() {
@@ -655,12 +804,14 @@ document.addEventListener('click', (event) => {
 if (closePanel && settingsPanel) {
 closePanel.addEventListener('click', () => {
   settingsPanel.classList.remove('is-open');
+  setActiveMenuItem('home');
 });
 }
 
 if (closeProgressPanel && progressPanel) {
   closeProgressPanel.addEventListener('click', () => {
     progressPanel.classList.remove('is-open');
+    setActiveMenuItem('home');
   });
 }
 
@@ -668,6 +819,7 @@ if (progressPanel) {
   progressPanel.addEventListener('click', (event) => {
     if (event.target === progressPanel) {
       progressPanel.classList.remove('is-open');
+      setActiveMenuItem('home');
     }
   });
 }
@@ -676,14 +828,46 @@ if (savedSessionPanel) {
   savedSessionPanel.addEventListener('click', (event) => {
     if (event.target === savedSessionPanel) {
       savedSessionPanel.classList.remove('is-open');
+      setActiveMenuItem('home');
     }
   });
 }
 
+function setActiveMenuItem(panel) {
+  try {
+    if (!menuItems || menuItems.length === 0) return;
+    menuItems.forEach((button) => {
+      button.classList.toggle('active', button.dataset.panel === panel);
+    });
+  } catch (e) { /* ignore */ }
+}
+
+// Main page (practice area + header/footer empty space) click -> close any open panel and return Home.
+// Settings/Progress/Saved panels are position:fixed (outside .screen-content),
+// so a document-level listener is needed — but panel/menu/quiz clicks are ignored.
+document.addEventListener('click', (event) => {
+  try {
+    const target = event.target;
+    if (!target || typeof target.closest !== 'function') return;
+    // Clicks inside panels, menus, modals or the Settings menu item itself must NOT close.
+    if (target.closest('.settings-panel, .progress-panel, .saved-session-panel, .side-menu, .save-progress-modal, .stroke-modal, .menu-item, .nav-item, .bottom-nav')) return;
+    // Only react when some panel is actually open.
+    const settingsOpen = settingsPanel && settingsPanel.classList.contains('is-open');
+    const progressOpen = progressPanel && progressPanel.classList.contains('is-open');
+    const savedOpen = savedSessionPanel && savedSessionPanel.classList.contains('is-open');
+    if (!settingsOpen && !progressOpen && !savedOpen) return;
+    // Only clicks on the main page surface (practice area / phone frame background).
+    if (!target.closest('.screen-content, .phone-frame, .page-shell')) return;
+    if (settingsOpen) settingsPanel.classList.remove('is-open');
+    if (progressOpen) progressPanel.classList.remove('is-open');
+    if (savedOpen) savedSessionPanel.classList.remove('is-open');
+    setActiveMenuItem('home');
+  } catch (e) { /* never break clicks */ }
+});
+
 menuItems.forEach((item) => {
   item.addEventListener('click', () => {
-    menuItems.forEach((button) => button.classList.remove('active'));
-    item.classList.add('active');
+    setActiveMenuItem(item.dataset.panel);
 
     if (item.dataset.panel === 'settings') {
       settingsPanel.classList.add('is-open');
@@ -738,6 +922,17 @@ vibrationToggle.addEventListener('click', () => {
 if (backgroundSelect) {
 backgroundSelect.addEventListener('change', (event) => {
   saveSettings({ theme: event.target.value });
+});
+}
+
+if (autoNextDelaySelect) {
+autoNextDelaySelect.addEventListener('change', (event) => {
+  const val = Number(event.target.value);
+  const safe = AUTO_NEXT_DELAY_OPTIONS.includes(val) ? val : defaults.autoNextDelay;
+  const current = loadSettings();
+  const updated = { ...current, autoNextDelay: safe };
+  try { localStorage.setItem('kanji-settings', JSON.stringify(updated)); } catch (e) { /* ignore */ }
+  if (autoNextDelaySelect) autoNextDelaySelect.value = String(safe);
 });
 }
 
@@ -908,6 +1103,15 @@ function enhanceMeaningTranslation(card) {
   });
 }
 
+function shuffleArray(values) {
+  const arr = Array.isArray(values) ? [...values] : [];
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 function renderQuizCard() {
   if (autoNextTimer) {
     clearTimeout(autoNextTimer);
@@ -960,19 +1164,20 @@ function renderQuizCard() {
   const candidateDistractors = [...wrongReadings, ...uniqueReadings.filter((value) => value !== (card.reading || ''))]
     .filter((value, index, array) => value && array.indexOf(value) === index);
 
-  const distractors = candidateDistractors
-    .filter((value) => value !== (card.reading || ''))
-    .slice(0, 9);
+  // Shuffle FIRST, then slice — otherwise .slice(0, 9) always picks the same
+  // first 9 readings (original data order) and wrong options keep repeating.
+  const distractors = shuffleArray(
+    candidateDistractors.filter((value) => value !== (card.reading || ''))
+  ).slice(0, 9);
 
   const fallbackOptions = ['にほんご', 'みず', 'やま', 'きょう', 'あめ', 'おはよう'];
-  const choicePool = [card.reading || '', ...distractors, ...fallbackOptions]
+  const choicePool = shuffleArray([card.reading || '', ...distractors, ...fallbackOptions]
     .filter((value, index, array) => typeof value === 'string' && value.trim() && array.indexOf(value) === index)
-    .filter((value) => value !== (card.reading || ''));
+    .filter((value) => value !== (card.reading || '')));
 
-  const choices = [card.reading || '', ...choicePool]
+  const choices = shuffleArray([card.reading || '', ...choicePool]
     .filter((value, index, array) => value && array.indexOf(value) === index)
-    .slice(0, 4)
-    .sort(() => Math.random() - 0.5);
+    .slice(0, 4));
 
   answerButtons.forEach((button, index) => {
     button.textContent = choices[index] || '';
@@ -1102,18 +1307,20 @@ answerButtons.forEach((button) => {
       autoNextTimer = setTimeout(() => {
         autoNextTimer = null;
         renderQuizCard();
-      }, AUTO_NEXT_DELAY);
+      }, getAutoNextDelay());
     };
 
     const correctButton = [...answerButtons].find((option) => option.dataset.isCorrect === 'true');
 
     if (button.dataset.isCorrect === 'true') {
       // Green hit -> lock everything + show meaning section + auto next
+      try { logFirstAttemptResult(currentKanjiChar, wrongAttempts === 0); } catch (e) { /* ignore */ }
       answerButtons.forEach((option) => {
         option.disabled = true;
       });
       button.classList.add('correct', 'selected');
       revealTranslation();
+      refreshStreakBadge();
       scheduleAutoNext();
     } else {
       // Wrong -> red only on clicked button, keep other 2 options clickable
@@ -1123,6 +1330,7 @@ answerButtons.forEach((button) => {
 
       if (wrongAttempts >= 3) {
         // 3rd attempt fail -> lock everything, show correct green + meaning section + auto next
+        try { logFirstAttemptResult(currentKanjiChar, false); } catch (e) { /* ignore */ }
         answerButtons.forEach((option) => {
           option.disabled = true;
         });
@@ -1130,6 +1338,7 @@ answerButtons.forEach((button) => {
           correctButton.classList.add('correct');
         }
         revealTranslation();
+        refreshStreakBadge();
         scheduleAutoNext();
       }
     }
@@ -1454,6 +1663,13 @@ navItems.forEach((item) => {
     item.classList.add('active');
     if (item.textContent.includes('設定')) {
       if (settingsPanel) settingsPanel.classList.add('is-open');
+      setActiveMenuItem('settings');
+    } else {
+      // Home (or other bottom tab) -> close panels and return to main page.
+      if (settingsPanel) settingsPanel.classList.remove('is-open');
+      if (progressPanel) progressPanel.classList.remove('is-open');
+      if (savedSessionPanel) savedSessionPanel.classList.remove('is-open');
+      setActiveMenuItem('home');
     }
   });
 });
@@ -1462,6 +1678,7 @@ try {
   applySettings();
 } catch (error) { /* keep UI alive */ }
 try { refreshHelperLimitUI(); } catch (error) { /* ignore */ }
+try { refreshStreakBadge(); } catch (error) { /* ignore */ }
 try {
   if (Object.keys(loadProgressSnapshot()).length > 0) {
     setTimeout(() => showResumeProgressPrompt(), 200);

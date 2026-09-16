@@ -85,15 +85,10 @@
         <main class="screen-content">
           <div class="practice-topbar">
             <span id="practiceTopLabel">今日の練習: N5 漢字</span>
-            <span class="lesson-count">1/5</span>
+            <span class="lesson-count" id="streakBadge" title="आज मिलेको"><span class="streak-fire">🔥</span><span class="streak-num" id="streakNum">0</span></span>
           </div>
 
           <div class="kanji-panel">
-            <div class="panel-row">
-              <span>書き方</span>
-              <span class="circle-badge">1</span>
-            </div>
-
             <div class="kanji-body">
               <div class="kanji-word">語</div>
               <div class="kanji-meta hidden">
@@ -194,6 +189,16 @@
           </select>
         </div>
 
+        <div class="setting-item">
+          <label for="autoNextDelaySelect">Time delay (auto next)</label>
+          <select id="autoNextDelaySelect">
+            <option value="3">3 second</option>
+            <option value="4">4 second</option>
+            <option value="5">5 second</option>
+            <option value="6">6 second</option>
+          </select>
+        </div>
+
         <div class="setting-item slider-item">
           <label for="fontSizeRange">Font size</label>
           <input id="fontSizeRange" type="range" min="14" max="26" value="18" />
@@ -214,13 +219,17 @@
         <button class="close-panel" id="closeProgressPanel" aria-label="Close progress">×</button>
       </div>
       <div class="progress-body">
-        <p class="progress-subtitle">Last 15 days · first attempt</p>
+        <p class="progress-subtitle" id="progressSubtitle">Last 15 days · first attempt</p>
+        <p class="progress-weekly" id="progressWeekly"></p>
         <div class="progress-hero">
           <span class="progress-hero-number" id="progressTotal">0</span>
           <span class="progress-hero-label">kanji picked right on first attempt</span>
         </div>
-        <div class="progress-trend" id="progressTrend"></div>
-        <p class="progress-comment" id="progressComment"></p>
+        <div class="progress-breakdown">
+          <div class="progress-breakdown-row"><span>Today</span><strong id="progressToday">0</strong></div>
+          <div class="progress-breakdown-row"><span>Yesterday</span><strong id="progressYesterday">0</strong></div>
+          <div class="progress-breakdown-row"><span>This week</span><strong id="progressWeek">0</strong></div>
+        </div>
       </div>
     </div>
 

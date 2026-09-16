@@ -1,148 +1,998 @@
 window.KANJI_N4_DATA = [
-  { kanji: '魚', reading: 'さかな', meaning: 'fish', example: '魚を食べる' },
-  { kanji: '鳥', reading: 'とり', meaning: 'bird', example: '鳥がいる' },
-  { kanji: '馬', reading: 'うま', meaning: 'horse', example: '馬を見た' },
-  { kanji: '牛', reading: 'うし', meaning: 'cow', example: '牛乳' },
-  { kanji: '物', reading: 'もの', meaning: 'thing, object', example: '物を買う' },
-  { kanji: '肉', reading: 'にく', meaning: 'meat', example: '肉料理' },
-  { kanji: '貝', reading: 'かい', meaning: 'shellfish', example: '貝がら' },
-  { kanji: '竹', reading: 'たけ', meaning: 'bamboo', example: '竹の矢' },
-  { kanji: '米', reading: 'こめ', meaning: 'rice', example: '米屋' },
-  { kanji: '糸', reading: 'いと', meaning: 'thread', example: '糸で縫う' },
-  { kanji: '花', reading: 'はな', meaning: 'flower', example: '花が咲く' },
-  { kanji: '茶', reading: 'ちゃ', meaning: 'tea', example: 'お茶' },
-  { kanji: '字', reading: 'じ', meaning: 'character', example: '字の練習' },
-  { kanji: '文', reading: 'ぶん', meaning: 'sentence, writing', example: '文を書く' },
-  { kanji: '新', reading: 'あたらしい', meaning: 'new', example: '新しい店' },
-  { kanji: '古', reading: 'ふるい', meaning: 'old', example: '古い本' },
-  { kanji: '短', reading: 'みじかい', meaning: 'short', example: '短い時間' },
-  { kanji: '安', reading: 'やすい', meaning: 'cheap, safe', example: '安い店' },
-  { kanji: '低', reading: 'ひくい', meaning: 'low', example: '低い山' },
-  { kanji: '暗', reading: 'くらい', meaning: 'dark', example: '暗い部屋' },
-  { kanji: '多', reading: 'おおい', meaning: 'many', example: '多くの人' },
-  { kanji: '少', reading: 'すくない', meaning: 'few, little', example: '少し' },
-  { kanji: '帰', reading: 'かえる', meaning: 'return', example: '家に帰る' },
-  { kanji: '飲', reading: 'のむ', meaning: 'drink', example: '水を飲む' },
-  { kanji: '教', reading: 'おしえる', meaning: 'teach', example: '先生が教える' },
-  { kanji: '買', reading: 'かう', meaning: 'buy', example: '本を買う' },
-  { kanji: '売', reading: 'うる', meaning: 'sell', example: '店で売る' },
-  { kanji: '開', reading: 'あく', meaning: 'open', example: 'ドアが開く' },
-  { kanji: '閉', reading: 'しめる', meaning: 'close', example: '窓を閉める' },
-  { kanji: '飯', reading: 'めし', meaning: 'meal, rice', example: '朝ご飯' },
-  { kanji: '歌', reading: 'うた', meaning: 'song', example: '歌を歌う' },
-  { kanji: '曜', reading: 'よう', meaning: 'day of week', example: '月曜日' },
-  { kanji: '週', reading: 'しゅう', meaning: 'week', example: '一週間' },
-  { kanji: '方', reading: 'ほう', meaning: 'direction, way', example: 'この方' },
-  { kanji: '夕', reading: 'ゆう', meaning: 'evening', example: '夕方' },
-  { kanji: '朝', reading: 'あさ', meaning: 'morning', example: '朝ごはん' },
-  { kanji: '昼', reading: 'ひる', meaning: 'daytime', example: '昼ご飯' },
-  { kanji: '夜', reading: 'よる', meaning: 'night', example: '夜歩く' },
-  { kanji: '晩', reading: 'ばん', meaning: 'evening', example: '晩ご飯' },
-  { kanji: '友', reading: 'とも', meaning: 'friend', example: '友だち' },
-  { kanji: '夫', reading: 'おっと', meaning: 'husband', example: '夫の仕事' },
-  { kanji: '妻', reading: 'つま', meaning: 'wife', example: '妻と話す' },
-  { kanji: '彼', reading: 'かれ', meaning: 'he, boyfriend', example: '彼が来る' },
-  { kanji: '主', reading: 'おも', meaning: 'main, master', example: '主な問題' },
-  { kanji: '奥', reading: 'おく', meaning: 'interior, back', example: '奥さん' },
-  { kanji: '海', reading: 'うみ', meaning: 'sea', example: '海で泳ぐ' },
-  { kanji: '泳', reading: 'およぐ', meaning: 'swim', example: 'プールで泳ぐ' },
-  { kanji: '油', reading: 'あぶら', meaning: 'oil', example: '油を使う' },
-  { kanji: '待', reading: 'まつ', meaning: 'wait', example: '駅で待つ' },
-  { kanji: '計', reading: 'はかる', meaning: 'measure, plan', example: '計画' },
-  { kanji: '酒', reading: 'さけ', meaning: 'alcohol', example: '酒を飲む' },
-  { kanji: '作', reading: 'つくる', meaning: 'make', example: '料理を作る' },
-  { kanji: '部', reading: 'ぶ', meaning: 'section', example: '部屋' },
-  { kanji: '院', reading: 'いん', meaning: 'institution', example: '病院' },
-  { kanji: '宅', reading: 'たく', meaning: 'house', example: '自宅' },
-  { kanji: '客', reading: 'きゃく', meaning: 'guest', example: 'お客さん' },
-  { kanji: '室', reading: 'しつ', meaning: 'room', example: '教室' },
-  { kanji: '家', reading: 'いえ', meaning: 'house', example: '家に帰る' },
-  { kanji: '英', reading: 'えい', meaning: 'English', example: '英語' },
-  { kanji: '薬', reading: 'くすり', meaning: 'medicine', example: '薬を飲む' },
-  { kanji: '雲', reading: 'くも', meaning: 'cloud', example: '雲が多い' },
-  { kanji: '雪', reading: 'ゆき', meaning: 'snow', example: '雪が降る' },
-  { kanji: '言', reading: 'いう', meaning: 'say', example: '言う' },
-  { kanji: '広', reading: 'ひろい', meaning: 'wide', example: '広い部屋' },
-  { kanji: '店', reading: 'みせ', meaning: 'shop', example: '店に行く' },
-  { kanji: '度', reading: 'ど', meaning: 'degree, time', example: '三度' },
-  { kanji: '病', reading: 'やまい', meaning: 'illness', example: '病気' },
-  { kanji: '疲', reading: 'つかれる', meaning: 'tired', example: '疲れる' },
-  { kanji: '屋', reading: 'や', meaning: 'shop', example: '八百屋' },
-  { kanji: '回', reading: 'かい', meaning: 'time, round', example: '一回' },
-  { kanji: '困', reading: 'こまる', meaning: 'be troubled', example: '困る' },
-  { kanji: '近', reading: 'ちかい', meaning: 'near', example: '近い駅' },
-  { kanji: '遠', reading: 'とおい', meaning: 'far', example: '遠い場所' },
-  { kanji: '速', reading: 'はやい', meaning: 'fast', example: '速い車' },
-  { kanji: '遅', reading: 'おそい', meaning: 'slow', example: '遅い電車' },
-  { kanji: '道', reading: 'みち', meaning: 'road, way', example: '道を歩く' },
-  { kanji: '青', reading: 'あお', meaning: 'blue, green', example: '青い空' },
-  { kanji: '晴', reading: 'はれる', meaning: 'clear up', example: '晴れる' },
-  { kanji: '静', reading: 'しずか', meaning: 'quiet', example: '静かな町' },
-  { kanji: '寺', reading: 'てら', meaning: 'temple', example: '寺を見た' },
-  { kanji: '持', reading: 'もつ', meaning: 'hold', example: 'かばんを持つ' },
-  { kanji: '荷', reading: 'に', meaning: 'baggage', example: '荷物' },
-  { kanji: '元', reading: 'もと', meaning: 'origin', example: '元気' },
-  { kanji: '有', reading: 'ある', meaning: 'have', example: '有名' },
-  { kanji: '親', reading: 'おや', meaning: 'parents', example: '親と話す' },
-  { kanji: '切', reading: 'きる', meaning: 'cut', example: '切る' },
-  { kanji: '便', reading: 'びん', meaning: 'convenience', example: '便り' },
-  { kanji: '利', reading: 'り', meaning: 'benefit', example: '便利' },
-  { kanji: '不', reading: 'ふ', meaning: 'not', example: '不安' },
-  { kanji: '若', reading: 'わかい', meaning: 'young', example: '若い人' },
-  { kanji: '早', reading: 'はやい', meaning: 'early', example: '早い' },
-  { kanji: '忙', reading: 'いそがしい', meaning: 'busy', example: '忙しい' },
-  { kanji: '乗', reading: 'のる', meaning: 'ride', example: '電車に乗る' },
-  { kanji: '降', reading: 'おりる', meaning: 'go down', example: '駅で降りる' },
-  { kanji: '着', reading: 'きる', meaning: 'wear, arrive', example: '着く' },
-  { kanji: '渡', reading: 'わたる', meaning: 'cross, hand over', example: '橋を渡る' },
-  { kanji: '通', reading: 'とおる', meaning: 'pass through', example: '道を通る' },
-  { kanji: '走', reading: 'はしる', meaning: 'run', example: '走る' },
-  { kanji: '歩', reading: 'あるく', meaning: 'walk', example: '歩く' },
-  { kanji: '止', reading: 'とまる', meaning: 'stop', example: '止まる' },
-  { kanji: '動', reading: 'うごく', meaning: 'move', example: '動く' },
-  { kanji: '働', reading: 'はたらく', meaning: 'work', example: '働く' },
-  { kanji: '鉄', reading: 'てつ', meaning: 'iron', example: '鉄道' },
-  { kanji: '工', reading: 'こう', meaning: 'craft, industry', example: '工場' },
-  { kanji: '場', reading: 'ば', meaning: 'place', example: '場所' },
-  { kanji: '地', reading: 'ち', meaning: 'ground', example: '地図' },
-  { kanji: '館', reading: 'かん', meaning: 'hall', example: '美術館' },
-  { kanji: '公', reading: 'こう', meaning: 'public', example: '公園' },
-  { kanji: '園', reading: 'えん', meaning: 'garden', example: '公園' },
-  { kanji: '住', reading: 'すむ', meaning: 'live', example: '住む' },
-  { kanji: '所', reading: 'ところ', meaning: 'place', example: '場所' },
-  { kanji: '番', reading: 'ばん', meaning: 'number', example: '番号' },
-  { kanji: '号', reading: 'ごう', meaning: 'number', example: '号室' },
-  { kanji: '市', reading: 'し', meaning: 'city', example: '市役所' },
-  { kanji: '町', reading: 'まち', meaning: 'town', example: '町へ行く' },
-  { kanji: '村', reading: 'むら', meaning: 'village', example: '村' },
-  { kanji: '区', reading: 'く', meaning: 'ward', example: '区役所' },
-  { kanji: '都', reading: 'と', meaning: 'metropolis', example: '東京都' },
-  { kanji: '府', reading: 'ふ', meaning: 'prefecture', example: '大阪府' },
-  { kanji: '県', reading: 'けん', meaning: 'prefecture', example: '県立' },
-  { kanji: '島', reading: 'しま', meaning: 'island', example: '島に行く' },
-  { kanji: '京', reading: 'きょう', meaning: 'capital', example: '東京' },
-  { kanji: '様', reading: 'さま', meaning: 'appearance, sir', example: 'お客様' },
-  { kanji: '練', reading: 'ねる', meaning: 'practice', example: '練習' },
-  { kanji: '習', reading: 'ならう', meaning: 'learn', example: '勉強する' },
-  { kanji: '勉', reading: 'べん', meaning: 'diligence', example: '勉強' },
-  { kanji: '強', reading: 'つよい', meaning: 'strong', example: '強い' },
-  { kanji: '研', reading: 'けん', meaning: 'study, polish', example: '研究' },
-  { kanji: '究', reading: 'きゅう', meaning: 'research', example: '研究' },
-  { kanji: '留', reading: 'とめる', meaning: 'stay', example: '留学' },
-  { kanji: '質', reading: 'しつ', meaning: 'quality', example: '質問' },
-  { kanji: '問', reading: 'とく', meaning: 'question', example: '問題' },
-  { kanji: '題', reading: 'だい', meaning: 'topic', example: '問題' },
-  { kanji: '答', reading: 'こたえる', meaning: 'answer', example: '答える' },
-  { kanji: '宿', reading: 'やど', meaning: 'inn, lodging', example: '宿題' },
-  { kanji: '政', reading: 'せい', meaning: 'government', example: '政治' },
-  { kanji: '治', reading: 'おさめる', meaning: 'govern', example: '政治' },
-  { kanji: '経', reading: 'けい', meaning: 'pass through', example: '経済' },
-  { kanji: '済', reading: 'すむ', meaning: 'finish', example: '経済' },
-  { kanji: '史', reading: 'し', meaning: 'history', example: '歴史' },
-  { kanji: '育', reading: 'そだつ', meaning: 'nurture', example: '教育' },
-  { kanji: '化', reading: 'か', meaning: 'change, culture', example: '文化' },
-  { kanji: '理', reading: 'り', meaning: 'principle', example: '理科' },
-  { kanji: '科', reading: 'か', meaning: 'department', example: '理科' },
-  { kanji: '数', reading: 'かず', meaning: 'number', example: '数学' },
-  { kanji: '医', reading: 'い', meaning: 'medicine', example: '医者' }
+  {
+    "kanji": "力",
+    "reading": "ちから",
+    "meaning": "Power, Strength, Strong, Strain",
+    "example": "力"
+  },
+  {
+    "kanji": "口",
+    "reading": "くち",
+    "meaning": "Mouth",
+    "example": "口"
+  },
+  {
+    "kanji": "工",
+    "reading": "こう",
+    "meaning": "Craft, Construction, Katakana E Radical (no. 48)",
+    "example": "工場"
+  },
+  {
+    "kanji": "夕",
+    "reading": "ゆう",
+    "meaning": "Evening",
+    "example": "夕方"
+  },
+  {
+    "kanji": "手",
+    "reading": "て",
+    "meaning": "Hand",
+    "example": "手"
+  },
+  {
+    "kanji": "文",
+    "reading": "ぶん",
+    "meaning": "Sentence, Literature, Style, Art",
+    "example": "文章"
+  },
+  {
+    "kanji": "犬",
+    "reading": "いぬ",
+    "meaning": "Dog",
+    "example": "犬"
+  },
+  {
+    "kanji": "正",
+    "reading": "ただ",
+    "meaning": "Correct, Justice, Righteous, 10**40",
+    "example": "正"
+  },
+  {
+    "kanji": "田",
+    "reading": "た",
+    "meaning": "Rice Field, Rice Paddy",
+    "example": "田んぼ"
+  },
+  {
+    "kanji": "目",
+    "reading": "め",
+    "meaning": "Eye, Class, Look, Insight",
+    "example": "目"
+  },
+  {
+    "kanji": "立",
+    "reading": "た",
+    "meaning": "Stand Up, Rise, Set Up, Erect",
+    "example": "立つ"
+  },
+  {
+    "kanji": "元",
+    "reading": "もと",
+    "meaning": "Beginning, Former Time, Origin",
+    "example": "元気"
+  },
+  {
+    "kanji": "公",
+    "reading": "こう",
+    "meaning": "Public, Prince, Official, Governmental",
+    "example": "公園"
+  },
+  {
+    "kanji": "切",
+    "reading": "きる",
+    "meaning": "Cut, Cutoff, Be Sharp",
+    "example": "切る"
+  },
+  {
+    "kanji": "少",
+    "reading": "すくない",
+    "meaning": "Few, Little",
+    "example": "少し"
+  },
+  {
+    "kanji": "心",
+    "reading": "こころ",
+    "meaning": "Heart, Mind, Spirit, Heart Radical (no. 61)",
+    "example": "心"
+  },
+  {
+    "kanji": "方",
+    "reading": "ほう",
+    "meaning": "Direction, Person, Alternative",
+    "example": "この方"
+  },
+  {
+    "kanji": "牛",
+    "reading": "うし",
+    "meaning": "Cow",
+    "example": "牛乳"
+  },
+  {
+    "kanji": "止",
+    "reading": "とまる",
+    "meaning": "Stop, Halt",
+    "example": "止まる"
+  },
+  {
+    "kanji": "兄",
+    "reading": "あに",
+    "meaning": "Elder Brother, Big Brother",
+    "example": "兄は先生"
+  },
+  {
+    "kanji": "冬",
+    "reading": "ふゆ",
+    "meaning": "Winter",
+    "example": "冬"
+  },
+  {
+    "kanji": "古",
+    "reading": "ふるい",
+    "meaning": "Old",
+    "example": "古い本"
+  },
+  {
+    "kanji": "台",
+    "reading": "うてな",
+    "meaning": "Pedestal, A Stand, Counter For Machines And Vehicles",
+    "example": "台"
+  },
+  {
+    "kanji": "広",
+    "reading": "ひろい",
+    "meaning": "Wide, Broad, Spacious",
+    "example": "広い部屋"
+  },
+  {
+    "kanji": "用",
+    "reading": "よう",
+    "meaning": "Utilize, Business, Service, Use",
+    "example": "使用"
+  },
+  {
+    "kanji": "世",
+    "reading": "よ",
+    "meaning": "Generation, World, Society, Public",
+    "example": "世"
+  },
+  {
+    "kanji": "主",
+    "reading": "おも",
+    "meaning": "Lord, Chief, Master, Main Thing",
+    "example": "主な問題"
+  },
+  {
+    "kanji": "代",
+    "reading": "か",
+    "meaning": "Substitute, Change, Convert, Replace",
+    "example": "代"
+  },
+  {
+    "kanji": "写",
+    "reading": "うつ",
+    "meaning": "Copy, Be Photographed, Describe",
+    "example": "写"
+  },
+  {
+    "kanji": "去",
+    "reading": "さ",
+    "meaning": "Gone, Past, Quit, Leave",
+    "example": "去"
+  },
+  {
+    "kanji": "字",
+    "reading": "じ",
+    "meaning": "Character, Letter, Word, Section Of Village",
+    "example": "字の練習"
+  },
+  {
+    "kanji": "早",
+    "reading": "はやい",
+    "meaning": "Early, Fast",
+    "example": "早い"
+  },
+  {
+    "kanji": "町",
+    "reading": "まち",
+    "meaning": "Town, Village, Block, Street",
+    "example": "町へ行く"
+  },
+  {
+    "kanji": "花",
+    "reading": "はな",
+    "meaning": "Flower",
+    "example": "花が咲く"
+  },
+  {
+    "kanji": "赤",
+    "reading": "あか",
+    "meaning": "Red",
+    "example": "赤"
+  },
+  {
+    "kanji": "足",
+    "reading": "あし",
+    "meaning": "Leg, Foot, Be Sufficient, Counter For Pairs Of Footwear",
+    "example": "足"
+  },
+  {
+    "kanji": "不",
+    "reading": "ふ",
+    "meaning": "Negative, Non-, Bad, Ugly",
+    "example": "不安"
+  },
+  {
+    "kanji": "仕",
+    "reading": "し",
+    "meaning": "Attend, Doing, Official, Serve",
+    "example": "仕事"
+  },
+  {
+    "kanji": "会",
+    "reading": "あう",
+    "meaning": "Meeting, Meet, Party, Association",
+    "example": "会う"
+  },
+  {
+    "kanji": "同",
+    "reading": "どう",
+    "meaning": "Same, Agree, Equal",
+    "example": "共同"
+  },
+  {
+    "kanji": "多",
+    "reading": "おおい",
+    "meaning": "Many, Frequent, Much",
+    "example": "多くの人"
+  },
+  {
+    "kanji": "考",
+    "reading": "かんが",
+    "meaning": "Consider, Think Over",
+    "example": "考える"
+  },
+  {
+    "kanji": "肉",
+    "reading": "にく",
+    "meaning": "Meat",
+    "example": "肉料理"
+  },
+  {
+    "kanji": "自",
+    "reading": "みずか",
+    "meaning": "Oneself",
+    "example": "自"
+  },
+  {
+    "kanji": "色",
+    "reading": "いろ",
+    "meaning": "Color",
+    "example": "色"
+  },
+  {
+    "kanji": "体",
+    "reading": "からだ",
+    "meaning": "Body, Substance, Object, Reality",
+    "example": "体"
+  },
+  {
+    "kanji": "作",
+    "reading": "つくる",
+    "meaning": "Make, Production, Prepare, Build",
+    "example": "料理を作る"
+  },
+  {
+    "kanji": "図",
+    "reading": "え",
+    "meaning": "Map, Drawing, Plan, Extraordinary",
+    "example": "図"
+  },
+  {
+    "kanji": "売",
+    "reading": "うる",
+    "meaning": "Sell",
+    "example": "店で売る"
+  },
+  {
+    "kanji": "弟",
+    "reading": "おとうと",
+    "meaning": "Younger Brother, Faithful Service To Elders",
+    "example": "弟が小さい"
+  },
+  {
+    "kanji": "社",
+    "reading": "やしろ",
+    "meaning": "Company, Firm, Office, Association",
+    "example": "社"
+  },
+  {
+    "kanji": "言",
+    "reading": "げん",
+    "meaning": "Say, Word",
+    "example": "言語"
+  },
+  {
+    "kanji": "走",
+    "reading": "はしる",
+    "meaning": "Run",
+    "example": "走る"
+  },
+  {
+    "kanji": "近",
+    "reading": "ちかい",
+    "meaning": "Near, Early, Akin, Tantamount",
+    "example": "近い駅"
+  },
+  {
+    "kanji": "空",
+    "reading": "そら",
+    "meaning": "Empty, Sky, Void, Vacant",
+    "example": "空"
+  },
+  {
+    "kanji": "青",
+    "reading": "あお",
+    "meaning": "Blue, Green",
+    "example": "青い空"
+  },
+  {
+    "kanji": "音",
+    "reading": "おと",
+    "meaning": "Sound, Noise",
+    "example": "音"
+  },
+  {
+    "kanji": "地",
+    "reading": "ち",
+    "meaning": "Ground, Earth",
+    "example": "地図"
+  },
+  {
+    "kanji": "安",
+    "reading": "やすい",
+    "meaning": "Relax, Cheap, Low, Quiet",
+    "example": "安い店"
+  },
+  {
+    "kanji": "有",
+    "reading": "ある",
+    "meaning": "Possess, Have, Exist, Happen",
+    "example": "有名"
+  },
+  {
+    "kanji": "死",
+    "reading": "し",
+    "meaning": "Death, Die",
+    "example": "死ぬ"
+  },
+  {
+    "kanji": "京",
+    "reading": "きょう",
+    "meaning": "Capital, 10**16",
+    "example": "東京"
+  },
+  {
+    "kanji": "夜",
+    "reading": "よる",
+    "meaning": "Night, Evening",
+    "example": "夜歩く"
+  },
+  {
+    "kanji": "妹",
+    "reading": "いもうと",
+    "meaning": "Younger Sister",
+    "example": "妹の名前"
+  },
+  {
+    "kanji": "姉",
+    "reading": "あね",
+    "meaning": "Elder Sister",
+    "example": "姉がいる"
+  },
+  {
+    "kanji": "店",
+    "reading": "みせ",
+    "meaning": "Store, Shop",
+    "example": "店に行く"
+  },
+  {
+    "kanji": "明",
+    "reading": "めい",
+    "meaning": "Bright, Light",
+    "example": "証明"
+  },
+  {
+    "kanji": "歩",
+    "reading": "あるく",
+    "meaning": "Walk, Counter For Steps",
+    "example": "歩く"
+  },
+  {
+    "kanji": "画",
+    "reading": "が",
+    "meaning": "Brush-stroke, Picture",
+    "example": "企画"
+  },
+  {
+    "kanji": "知",
+    "reading": "し",
+    "meaning": "Know, Wisdom",
+    "example": "知る"
+  },
+  {
+    "kanji": "室",
+    "reading": "しつ",
+    "meaning": "Room, Apartment, Chamber, Greenhouse",
+    "example": "教室"
+  },
+  {
+    "kanji": "思",
+    "reading": "おも",
+    "meaning": "Think",
+    "example": "思う"
+  },
+  {
+    "kanji": "海",
+    "reading": "うみ",
+    "meaning": "Sea, Ocean",
+    "example": "海で泳ぐ"
+  },
+  {
+    "kanji": "茶",
+    "reading": "ちゃ",
+    "meaning": "Tea",
+    "example": "お茶"
+  },
+  {
+    "kanji": "以",
+    "reading": "もっ",
+    "meaning": "By Means Of, Because, In View Of, Compared With",
+    "example": "以"
+  },
+  {
+    "kanji": "夏",
+    "reading": "なつ",
+    "meaning": "Summer",
+    "example": "夏"
+  },
+  {
+    "kanji": "家",
+    "reading": "いえ",
+    "meaning": "House, Home, Family, Professional",
+    "example": "家に帰る"
+  },
+  {
+    "kanji": "紙",
+    "reading": "かみ",
+    "meaning": "Paper",
+    "example": "紙"
+  },
+  {
+    "kanji": "通",
+    "reading": "とおる",
+    "meaning": "Traffic, Pass Through, Avenue, Commute",
+    "example": "道を通る"
+  },
+  {
+    "kanji": "強",
+    "reading": "つよい",
+    "meaning": "Strong",
+    "example": "強い"
+  },
+  {
+    "kanji": "教",
+    "reading": "おしえる",
+    "meaning": "Teach, Faith, Doctrine",
+    "example": "先生が教える"
+  },
+  {
+    "kanji": "理",
+    "reading": "り",
+    "meaning": "Logic, Arrangement, Reason, Justice",
+    "example": "理科"
+  },
+  {
+    "kanji": "週",
+    "reading": "しゅう",
+    "meaning": "Week",
+    "example": "一週間"
+  },
+  {
+    "kanji": "魚",
+    "reading": "さかな",
+    "meaning": "Fish",
+    "example": "魚を食べる"
+  },
+  {
+    "kanji": "鳥",
+    "reading": "とり",
+    "meaning": "Bird, Chicken",
+    "example": "鳥がいる"
+  },
+  {
+    "kanji": "黒",
+    "reading": "くろ",
+    "meaning": "Black",
+    "example": "黒"
+  },
+  {
+    "kanji": "住",
+    "reading": "すむ",
+    "meaning": "Dwell, Reside, Live, Inhabit",
+    "example": "住む"
+  },
+  {
+    "kanji": "医",
+    "reading": "い",
+    "meaning": "Doctor, Medicine",
+    "example": "医者"
+  },
+  {
+    "kanji": "究",
+    "reading": "きゅう",
+    "meaning": "Research, Study",
+    "example": "研究"
+  },
+  {
+    "kanji": "者",
+    "reading": "もの",
+    "meaning": "Someone, Person",
+    "example": "者"
+  },
+  {
+    "kanji": "研",
+    "reading": "けん",
+    "meaning": "Polish, Study Of, Sharpen",
+    "example": "研究"
+  },
+  {
+    "kanji": "場",
+    "reading": "ば",
+    "meaning": "Location, Place",
+    "example": "場所"
+  },
+  {
+    "kanji": "朝",
+    "reading": "あさ",
+    "meaning": "Morning, Dynasty, Regime, Epoch",
+    "example": "朝ごはん"
+  },
+  {
+    "kanji": "答",
+    "reading": "こたえる",
+    "meaning": "Solution, Answer",
+    "example": "答える"
+  },
+  {
+    "kanji": "買",
+    "reading": "かう",
+    "meaning": "Buy",
+    "example": "本を買う"
+  },
+  {
+    "kanji": "道",
+    "reading": "みち",
+    "meaning": "Road-way, Street, District, Journey",
+    "example": "道を歩く"
+  },
+  {
+    "kanji": "楽",
+    "reading": "らく",
+    "meaning": "Music, Comfort, Ease",
+    "example": "楽しい"
+  },
+  {
+    "kanji": "事",
+    "reading": "こと",
+    "meaning": "Matter, Thing, Fact, Business",
+    "example": "事"
+  },
+  {
+    "kanji": "使",
+    "reading": "つか",
+    "meaning": "Use, Send On A Mission, Order, Messenger",
+    "example": "使用"
+  },
+  {
+    "kanji": "始",
+    "reading": "はじ",
+    "meaning": "Commence, Begin",
+    "example": "始まる"
+  },
+  {
+    "kanji": "服",
+    "reading": "ふく",
+    "meaning": "Clothing, Admit, Obey, Discharge",
+    "example": "服"
+  },
+  {
+    "kanji": "物",
+    "reading": "もの",
+    "meaning": "Thing, Object, Matter",
+    "example": "物を買う"
+  },
+  {
+    "kanji": "屋",
+    "reading": "や",
+    "meaning": "Roof, House, Shop, Dealer",
+    "example": "八百屋"
+  },
+  {
+    "kanji": "度",
+    "reading": "ど",
+    "meaning": "Degrees, Occurrence, Time, Counter For Occurrences",
+    "example": "三度"
+  },
+  {
+    "kanji": "待",
+    "reading": "まつ",
+    "meaning": "Wait, Depend On",
+    "example": "駅で待つ"
+  },
+  {
+    "kanji": "持",
+    "reading": "もつ",
+    "meaning": "Hold, Have",
+    "example": "かばんを持つ"
+  },
+  {
+    "kanji": "界",
+    "reading": "かい",
+    "meaning": "World, Boundary",
+    "example": "世界"
+  },
+  {
+    "kanji": "発",
+    "reading": "た",
+    "meaning": "Departure, Discharge, Publish, Emit",
+    "example": "発"
+  },
+  {
+    "kanji": "送",
+    "reading": "おく",
+    "meaning": "Escort, Send",
+    "example": "送"
+  },
+  {
+    "kanji": "重",
+    "reading": "じゅう",
+    "meaning": "Heavy, Important, Esteem, Respect",
+    "example": "慎重"
+  },
+  {
+    "kanji": "起",
+    "reading": "お",
+    "meaning": "Rouse, Wake Up, Get Up",
+    "example": "起きる"
+  },
+  {
+    "kanji": "院",
+    "reading": "いん",
+    "meaning": "Inst., Institution, Temple, Mansion",
+    "example": "病院"
+  },
+  {
+    "kanji": "終",
+    "reading": "おわ",
+    "meaning": "End, Finish",
+    "example": "終わる"
+  },
+  {
+    "kanji": "習",
+    "reading": "ならう",
+    "meaning": "Learn",
+    "example": "勉強する"
+  },
+  {
+    "kanji": "転",
+    "reading": "ころ",
+    "meaning": "Revolve, Turn Around, Change",
+    "example": "転職"
+  },
+  {
+    "kanji": "運",
+    "reading": "うん",
+    "meaning": "Carry, Luck, Destiny, Fate",
+    "example": "運転"
+  },
+  {
+    "kanji": "開",
+    "reading": "あく",
+    "meaning": "Open, Unfold, Unseal",
+    "example": "ドアが開く"
+  },
+  {
+    "kanji": "集",
+    "reading": "あつ",
+    "meaning": "Gather, Meet, Congregate, Swarm",
+    "example": "集"
+  },
+  {
+    "kanji": "飲",
+    "reading": "のむ",
+    "meaning": "Drink, Smoke, Take",
+    "example": "水を飲む"
+  },
+  {
+    "kanji": "業",
+    "reading": "わざ",
+    "meaning": "Business, Vocation, Arts, Performance",
+    "example": "業"
+  },
+  {
+    "kanji": "漢",
+    "reading": "かん",
+    "meaning": "Sino-, China",
+    "example": "漢"
+  },
+  {
+    "kanji": "歌",
+    "reading": "うた",
+    "meaning": "Song, Sing",
+    "example": "歌を歌う"
+  },
+  {
+    "kanji": "親",
+    "reading": "おや",
+    "meaning": "Parent, Intimacy, Relative, Familiarity",
+    "example": "親と話す"
+  },
+  {
+    "kanji": "病",
+    "reading": "やまい",
+    "meaning": "Ill, Sick",
+    "example": "病気"
+  },
+  {
+    "kanji": "別",
+    "reading": "べつ",
+    "meaning": "Separate, Branch Off, Diverge, Fork",
+    "example": "識別"
+  },
+  {
+    "kanji": "注",
+    "reading": "そそ",
+    "meaning": "Pour, Irrigate, Shed (tears), Flow Into",
+    "example": "注"
+  },
+  {
+    "kanji": "洋",
+    "reading": "よう",
+    "meaning": "Ocean, Sea, Foreign, Western Style",
+    "example": "洋"
+  },
+  {
+    "kanji": "特",
+    "reading": "とく",
+    "meaning": "Special",
+    "example": "特"
+  },
+  {
+    "kanji": "意",
+    "reading": "い",
+    "meaning": "Idea, Mind, Heart, Taste",
+    "example": "意"
+  },
+  {
+    "kanji": "味",
+    "reading": "あじ",
+    "meaning": "Flavor, Taste",
+    "example": "味"
+  },
+  {
+    "kanji": "勉",
+    "reading": "べん",
+    "meaning": "Exertion, Endeavour, Encourage, Strive",
+    "example": "勉強"
+  },
+  {
+    "kanji": "旅",
+    "reading": "たび",
+    "meaning": "Trip, Travel",
+    "example": "旅行"
+  },
+  {
+    "kanji": "員",
+    "reading": "いん",
+    "meaning": "Employee, Member, Number, The One In Charge",
+    "example": "員"
+  },
+  {
+    "kanji": "動",
+    "reading": "うごく",
+    "meaning": "Move, Motion, Change, Confusion",
+    "example": "動く"
+  },
+  {
+    "kanji": "悪",
+    "reading": "わる",
+    "meaning": "Bad, Vice, Rascal, False",
+    "example": "悪"
+  },
+  {
+    "kanji": "族",
+    "reading": "ぞく",
+    "meaning": "Tribe, Family",
+    "example": "族"
+  },
+  {
+    "kanji": "着",
+    "reading": "きる",
+    "meaning": "Don, Arrive, Wear, Counter For Suits Of Clothing",
+    "example": "着く"
+  },
+  {
+    "kanji": "野",
+    "reading": "の",
+    "meaning": "Plains, Field, Rustic, Civilian Life",
+    "example": "野原"
+  },
+  {
+    "kanji": "風",
+    "reading": "かぜ",
+    "meaning": "Wind, Air, Style, Manner",
+    "example": "風"
+  },
+  {
+    "kanji": "新",
+    "reading": "あたらしい",
+    "meaning": "New",
+    "example": "新しい店"
+  },
+  {
+    "kanji": "問",
+    "reading": "とく",
+    "meaning": "Question, Ask, Problem",
+    "example": "問題"
+  },
+  {
+    "kanji": "銀",
+    "reading": "ぎん",
+    "meaning": "Silver",
+    "example": "銀"
+  },
+  {
+    "kanji": "題",
+    "reading": "だい",
+    "meaning": "Topic, Subject",
+    "example": "問題"
+  },
+  {
+    "kanji": "館",
+    "reading": "かん",
+    "meaning": "Building, Mansion, Large Building, Palace",
+    "example": "美術館"
+  },
+  {
+    "kanji": "駅",
+    "reading": "えき",
+    "meaning": "Station",
+    "example": "駅"
+  },
+  {
+    "kanji": "料",
+    "reading": "りょう",
+    "meaning": "Fee, Materials",
+    "example": "料"
+  },
+  {
+    "kanji": "映",
+    "reading": "うつ",
+    "meaning": "Reflect, Reflection, Projection",
+    "example": "映"
+  },
+  {
+    "kanji": "私",
+    "reading": "わたし",
+    "meaning": "Private, I, Me",
+    "example": "私は学生"
+  },
+  {
+    "kanji": "帰",
+    "reading": "かえる",
+    "meaning": "Homecoming, Arrive At, Lead To, Result In",
+    "example": "家に帰る"
+  },
+  {
+    "kanji": "春",
+    "reading": "はる",
+    "meaning": "Springtime, Spring (season)",
+    "example": "春"
+  },
+  {
+    "kanji": "昼",
+    "reading": "ひる",
+    "meaning": "Daytime, Noon",
+    "example": "昼ご飯"
+  },
+  {
+    "kanji": "秋",
+    "reading": "あき",
+    "meaning": "Autumn",
+    "example": "秋"
+  },
+  {
+    "kanji": "計",
+    "reading": "けい",
+    "meaning": "Plot, Plan, Scheme, Measure",
+    "example": "設計"
+  },
+  {
+    "kanji": "建",
+    "reading": "た",
+    "meaning": "Build",
+    "example": "建てる"
+  },
+  {
+    "kanji": "英",
+    "reading": "えい",
+    "meaning": "England, English, Hero, Outstanding",
+    "example": "英語"
+  },
+  {
+    "kanji": "飯",
+    "reading": "めし",
+    "meaning": "Meal, Boiled Rice",
+    "example": "朝ご飯"
+  },
+  {
+    "kanji": "曜",
+    "reading": "よう",
+    "meaning": "Weekday",
+    "example": "月曜日"
+  },
+  {
+    "kanji": "品",
+    "reading": "ひん",
+    "meaning": "Goods, Refinement, Dignity, Article",
+    "example": "製品"
+  },
+  {
+    "kanji": "急",
+    "reading": "いそ",
+    "meaning": "Hurry, Emergency, Sudden, Steep",
+    "example": "急"
+  },
+  {
+    "kanji": "真",
+    "reading": "ま",
+    "meaning": "True, Reality, Buddhist Sect",
+    "example": "真"
+  },
+  {
+    "kanji": "堂",
+    "reading": "どう",
+    "meaning": "Public Chamber, Hall",
+    "example": "堂"
+  },
+  {
+    "kanji": "試",
+    "reading": "こころ",
+    "meaning": "Test, Try, Attempt, Experiment",
+    "example": "試験"
+  },
+  {
+    "kanji": "借",
+    "reading": "か",
+    "meaning": "Borrow, Rent",
+    "example": "借"
+  },
+  {
+    "kanji": "験",
+    "reading": "けん",
+    "meaning": "Verification, Effect, Testing",
+    "example": "試験"
+  },
+  {
+    "kanji": "質",
+    "reading": "しつ",
+    "meaning": "Substance, Quality, Matter, Temperament",
+    "example": "質問"
+  },
+  {
+    "kanji": "貸",
+    "reading": "か",
+    "meaning": "Lend",
+    "example": "貸"
+  }
 ];

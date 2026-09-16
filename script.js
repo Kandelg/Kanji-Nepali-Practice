@@ -13,6 +13,14 @@ const saveProgressYes = document.getElementById('saveProgressYes');
 const saveProgressNo = document.getElementById('saveProgressNo');
 const savedSessionPanel = document.getElementById('savedSessionPanel');
 const savedSessionList = document.getElementById('savedSessionList');
+const offlinePanel = document.getElementById('offlinePanel');
+const closeOfflinePanel = document.getElementById('closeOfflinePanel');
+const offlineStatus = document.getElementById('offlineStatus');
+const offlineLevel = document.getElementById('offlineLevel');
+const offlineLang = document.getElementById('offlineLang');
+const offlineDownloadBtn = document.getElementById('offlineDownloadBtn');
+const offlinePackList = document.getElementById('offlinePackList');
+const offlineModeToggle = document.getElementById('offlineModeToggle');
 const soundToggle = document.getElementById('soundToggle');
 const vibrationToggle = document.getElementById('vibrationToggle');
 const backgroundSelect = document.getElementById('backgroundSelect');
@@ -43,8 +51,31 @@ let n3Kanji = Array.isArray(window.KANJI_N3_DATA) ? window.KANJI_N3_DATA : [];
 let n2Kanji = Array.isArray(window.KANJI_N2_DATA) ? window.KANJI_N2_DATA : [];
 let n1Kanji = Array.isArray(window.KANJI_N1_DATA) ? window.KANJI_N1_DATA : [];
 
+function isDeviceOffline() {
+  try {
+    return typeof navigator !== 'undefined' && navigator.onLine === false;
+  } catch (error) {
+    return false;
+  }
+}
+
+function shouldUseOfflinePack() {
+  // Rule: online हुँदा सधैं online data use हुन्छ (offline data होइन);
+  // offline हुँदा मात्र (र toggle ON भए) downloaded pack बाट चल्छ।
+  if (!isDeviceOffline()) return false;
+  return isOfflineModePreferred();
+}
+
 function getCurrentKanjiPool() {
   const selectedLevel = levelSelect ? levelSelect.value : 'N5';
+
+  if (shouldUseOfflinePack()) {
+    const offline = resolveOfflinePool(selectedLevel);
+    if (offline && Array.isArray(offline.entries) && offline.entries.length > 0) {
+      return offline.entries;
+    }
+    // Offline but no pack yet -> fall through to bundled in-memory data.
+  }
 
   if (selectedLevel === 'N4') {
     return n4Kanji.length > 0 ? n4Kanji : n5Kanji;
@@ -603,9 +634,249 @@ function renderSavedSessions() {
   });
 }
 
+// ---- Offline packs (text-only: kanji + reading + meaning + example) ----
+// Downloaded packs are stored in localStorage so practice works with no
+// internet. Voice, stroke order and hint sentences still need internet.
+const OFFLINE_PACK_KEY = 'kanji-offline-packs-v1';
+const OFFLINE_PREF_KEY = 'kanji-offline-pref-v1';
+const OFFLINE_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
+const OFFLINE_LANGS = ['en', 'phil', 'id', 'ne', 'ko', 'vi'];
+
+// Throttled MyMemory translation (used at download time only): ~4 req/sec max.
+let offlineTranslateQueue = Promise.resolve();
+let offlineLastTranslateAt = 0;
+function throttledTranslate(englishMeaning, lang) {
+  offlineTranslateQueue = offlineTranslateQueue.then(async () => {
+    const wait = Math.max(0, 280 - (Date.now() - offlineLastTranslateAt));
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    const out = await fetchOnlineMeaning(englishMeaning, lang);
+    offlineLastTranslateAt = Date.now();
+    return out;
+  });
+  return offlineTranslateQueue;
+}
+
+function getOfflinePacks() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(OFFLINE_PACK_KEY) || '{}');
+    return stored && typeof stored === 'object' ? stored : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function getOfflinePref() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(OFFLINE_PREF_KEY) || '{}');
+    return stored && typeof stored === 'object' ? stored : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function setOfflinePref(pref) {
+  try {
+    localStorage.setItem(OFFLINE_PREF_KEY, JSON.stringify(pref || {}));
+  } catch (error) { /* ignore */ }
+}
+
+function isOfflineModePreferred() {
+  try {
+    const pref = getOfflinePref();
+    if (pref.useOffline === false) return false;
+    if (pref.useOffline === true) return true;
+    // Default: ON once at least one pack is downloaded.
+    return Object.keys(getOfflinePacks()).length > 0;
+  } catch (error) {
+    return false;
+  }
+}
+
+function offlinePackId(level, lang) {
+  return `${level}|${lang}`;
+}
+
+function getOfflinePack(level, lang) {
+  try {
+    const pack = getOfflinePacks()[offlinePackId(level, lang)];
+    if (pack && Array.isArray(pack.entries) && pack.entries.length > 0) return pack;
+  } catch (error) { /* ignore */ }
+  return null;
+}
+
+function resolveOfflinePool(selectedLevel) {
+  try {
+    const lang = (languageSelect && languageSelect.value) || 'en';
+    const exact = getOfflinePack(selectedLevel, lang);
+    if (exact) return { entries: exact.entries, lang: exact.lang, level: exact.level };
+    const packs = getOfflinePacks();
+    const anyKey = Object.keys(packs).find((key) => key.split('|')[0] === selectedLevel && Array.isArray(packs[key].entries) && packs[key].entries.length > 0);
+    if (anyKey) return { entries: packs[anyKey].entries, lang: packs[anyKey].lang, level: packs[anyKey].level };
+  } catch (error) { /* ignore */ }
+  return null;
+}
+
+function refreshOfflineUI() {
+  try {
+    const packs = getOfflinePacks();
+    const keys = Object.keys(packs);
+    let totalEntries = 0;
+    keys.forEach((key) => {
+      if (Array.isArray(packs[key].entries)) totalEntries += packs[key].entries.length;
+    });
+    if (offlineStatus) {
+      offlineStatus.textContent = keys.length === 0
+        ? 'No packs downloaded yet.'
+        : `${keys.length} pack${keys.length > 1 ? 's' : ''} downloaded · ${totalEntries} words (text only).`;
+    }
+    if (offlinePackList) {
+      offlinePackList.innerHTML = keys.sort().map((key) => {
+        const pack = packs[key] || {};
+        const count = Array.isArray(pack.entries) ? pack.entries.length : 0;
+        return `<div class="offline-pack-row"><div><div class="offline-pack-name">${pack.level || key} · ${pack.lang || ''}</div><div class="offline-pack-meta">${count} words · text only</div></div><button type="button" data-offline-delete="${key}">Delete</button></div>`;
+      }).join('');
+      offlinePackList.querySelectorAll('[data-offline-delete]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          try {
+            const packsNow = getOfflinePacks();
+            delete packsNow[btn.getAttribute('data-offline-delete')];
+            try {
+              localStorage.setItem(OFFLINE_PACK_KEY, JSON.stringify(packsNow));
+            } catch (e) { /* ignore */ }
+            refreshOfflineUI();
+          } catch (error) { /* ignore */ }
+        });
+      });
+    }
+    if (offlineModeToggle) {
+      offlineModeToggle.textContent = `Use offline data: ${isOfflineModePreferred() ? 'ON' : 'OFF'}`;
+    }
+    if (offlineLevel && levelSelect && OFFLINE_LEVELS.includes(levelSelect.value)) {
+      offlineLevel.value = levelSelect.value;
+    }
+    if (offlineLang && languageSelect && OFFLINE_LANGS.includes(languageSelect.value)) {
+      offlineLang.value = languageSelect.value;
+    }
+  } catch (error) { /* never break UI */ }
+}
+
+function openOfflinePanel() {
+  try {
+    refreshOfflineUI();
+    if (offlinePanel) offlinePanel.classList.add('is-open');
+    if (settingsPanel) settingsPanel.classList.remove('is-open');
+    if (progressPanel) progressPanel.classList.remove('is-open');
+    if (savedSessionPanel) savedSessionPanel.classList.remove('is-open');
+    if (sideMenu) sideMenu.classList.remove('is-open');
+  } catch (error) { /* ignore */ }
+}
+
+function closeOfflinePanelUI() {
+  try {
+    if (offlinePanel) offlinePanel.classList.remove('is-open');
+    setActiveMenuItem('home');
+  } catch (error) { /* ignore */ }
+}
+
+function closeAllPanels() {
+  try {
+    if (settingsPanel) settingsPanel.classList.remove('is-open');
+    if (progressPanel) progressPanel.classList.remove('is-open');
+    if (savedSessionPanel) savedSessionPanel.classList.remove('is-open');
+    if (offlinePanel) offlinePanel.classList.remove('is-open');
+    setActiveMenuItem('home');
+  } catch (error) { /* ignore */ }
+}
+
+async function downloadOfflinePack() {
+  try {
+    const level = (offlineLevel && offlineLevel.value) || (levelSelect && levelSelect.value) || 'N5';
+    const lang = (offlineLang && offlineLang.value) || (languageSelect && languageSelect.value) || 'en';
+    if (!OFFLINE_LEVELS.includes(level) || !OFFLINE_LANGS.includes(lang)) return;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      if (offlineStatus) offlineStatus.textContent = 'No internet — connect once to download.';
+      return;
+    }
+    let pool = [];
+    if (level === 'N5') pool = n5Kanji;
+    else if (level === 'N4') pool = n4Kanji;
+    else if (level === 'N3') pool = n3Kanji;
+    else if (level === 'N2') pool = n2Kanji;
+    else if (level === 'N1') pool = n1Kanji;
+    if (!Array.isArray(pool) || pool.length === 0) {
+      if (offlineStatus) offlineStatus.textContent = `Level ${level} data not loaded yet — wait a moment, then retry.`;
+      return;
+    }
+    if (offlineDownloadBtn) {
+      offlineDownloadBtn.disabled = true;
+      offlineDownloadBtn.textContent = `⬇️ Downloading ${level}… 0/${pool.length}`;
+    }
+    if (offlineStatus) offlineStatus.textContent = `Downloading ${level} · ${lang}… 0/${pool.length}`;
+    const entries = [];
+    let done = 0;
+    for (const item of pool) {
+      const kanji = (item && item.kanji) || '';
+      const reading = (item && item.reading) || '';
+      const english = (item && item.meaning) || '';
+      if (kanji && reading) {
+        let meaning = english;
+        if (lang !== 'en' && english) {
+          let local = null;
+          try {
+            if (typeof offlineTranslatedMeaning === 'function') local = offlineTranslatedMeaning(english, lang);
+          } catch (e) { local = null; }
+          if (local && local !== english) {
+            meaning = local;
+          } else {
+            const cache = getMeaningCache();
+            const cached = cache[`${lang}|${english}`];
+            if (cached) {
+              meaning = cached;
+            } else {
+              try {
+                const fetched = await throttledTranslate(english, lang);
+                if (fetched) meaning = fetched;
+              } catch (e) { /* keep English */ }
+            }
+          }
+        }
+        entries.push({ kanji, reading, meaning, example: (item && item.example) || '' });
+      }
+      done += 1;
+      if (done % 5 === 0 || done === pool.length) {
+        if (offlineDownloadBtn) offlineDownloadBtn.textContent = `⬇️ Downloading ${level}… ${done}/${pool.length}`;
+        if (offlineStatus) offlineStatus.textContent = `Downloading ${level} · ${lang}… ${done}/${pool.length}`;
+      }
+    }
+    const packs = getOfflinePacks();
+    const packId = offlinePackId(level, lang);
+    const isUpdate = !!packs[packId];
+    packs[packId] = { level, lang, savedAt: Date.now(), entries };
+    try {
+      localStorage.setItem(OFFLINE_PACK_KEY, JSON.stringify(packs));
+    } catch (quotaError) {
+      if (offlineStatus) offlineStatus.textContent = 'Storage full — delete a pack, then retry.';
+      return;
+    }
+    if (offlineStatus) offlineStatus.textContent = isUpdate
+      ? `Updated ${level} · ${lang} — ${entries.length} words (text only).`
+      : `Saved ${level} · ${lang} — ${entries.length} words (text only).`;
+    try { showLimitToast(isUpdate ? `Offline pack updated (${level} · ${lang}).` : `Offline pack saved (${level} · ${lang}).`); } catch (e) { /* ignore */ }
+    try {
+      setOfflinePref({ ...(getOfflinePref() || {}), useOffline: true });
+    } catch (e) { /* ignore */ }
+    try { renderQuizCard(); } catch (e) { /* ignore */ }
+  } finally {
+    if (offlineDownloadBtn) {
+      offlineDownloadBtn.disabled = false;
+      offlineDownloadBtn.textContent = '⬇️ Download pack';
+    }
+    refreshOfflineUI();
+  }
+}
+
 function restoreSessionState(session) {
   if (!session) return;
-
   const validLevels = ['N5', 'N4', 'N3', 'N2', 'N1'];
   const validLanguages = ['en', 'phil', 'id', 'ne', 'ko', 'vi'];
 
@@ -850,17 +1121,19 @@ document.addEventListener('click', (event) => {
     const target = event.target;
     if (!target || typeof target.closest !== 'function') return;
     // Clicks inside panels, menus, modals or the Settings menu item itself must NOT close.
-    if (target.closest('.settings-panel, .progress-panel, .saved-session-panel, .side-menu, .save-progress-modal, .stroke-modal, .menu-item, .nav-item, .bottom-nav')) return;
+    if (target.closest('.settings-panel, .progress-panel, .saved-session-panel, .offline-panel, .side-menu, .save-progress-modal, .stroke-modal, .menu-item, .nav-item, .bottom-nav')) return;
     // Only react when some panel is actually open.
     const settingsOpen = settingsPanel && settingsPanel.classList.contains('is-open');
     const progressOpen = progressPanel && progressPanel.classList.contains('is-open');
     const savedOpen = savedSessionPanel && savedSessionPanel.classList.contains('is-open');
-    if (!settingsOpen && !progressOpen && !savedOpen) return;
+    const offlineOpen = offlinePanel && offlinePanel.classList.contains('is-open');
+    if (!settingsOpen && !progressOpen && !savedOpen && !offlineOpen) return;
     // Only clicks on the main page surface (practice area / phone frame background).
     if (!target.closest('.screen-content, .phone-frame, .page-shell')) return;
     if (settingsOpen) settingsPanel.classList.remove('is-open');
     if (progressOpen) progressPanel.classList.remove('is-open');
     if (savedOpen) savedSessionPanel.classList.remove('is-open');
+    if (offlineOpen) offlinePanel.classList.remove('is-open');
     setActiveMenuItem('home');
   } catch (e) { /* never break clicks */ }
 });
@@ -872,6 +1145,7 @@ menuItems.forEach((item) => {
     if (item.dataset.panel === 'settings') {
       settingsPanel.classList.add('is-open');
       if (progressPanel) progressPanel.classList.remove('is-open');
+      if (offlinePanel) offlinePanel.classList.remove('is-open');
       savedSessionPanel.classList.remove('is-open');
       sideMenu.classList.remove('is-open');
       return;
@@ -881,6 +1155,7 @@ menuItems.forEach((item) => {
       renderProgressPanel();
       if (progressPanel) progressPanel.classList.add('is-open');
       settingsPanel.classList.remove('is-open');
+      if (offlinePanel) offlinePanel.classList.remove('is-open');
       savedSessionPanel.classList.remove('is-open');
       sideMenu.classList.remove('is-open');
       return;
@@ -891,7 +1166,13 @@ menuItems.forEach((item) => {
       savedSessionPanel.classList.add('is-open');
       settingsPanel.classList.remove('is-open');
       if (progressPanel) progressPanel.classList.remove('is-open');
+      if (offlinePanel) offlinePanel.classList.remove('is-open');
       sideMenu.classList.remove('is-open');
+      return;
+    }
+
+    if (item.dataset.panel === 'offline') {
+      openOfflinePanel();
       return;
     }
 
@@ -899,6 +1180,7 @@ menuItems.forEach((item) => {
       savedSessionPanel.classList.remove('is-open');
       settingsPanel.classList.remove('is-open');
       if (progressPanel) progressPanel.classList.remove('is-open');
+      if (offlinePanel) offlinePanel.classList.remove('is-open');
     }
 
     sideMenu.classList.remove('is-open');
@@ -1088,6 +1370,12 @@ async function fetchOnlineMeaning(value, language) {
 
 function enhanceMeaningTranslation(card) {
   if (!card || !metaRows || metaRows.length < 3) return;
+  // Offline pack entries already carry the downloaded (translated) meaning —
+  // never hit the network when the quiz is served from an offline pack.
+  try {
+    if (typeof window !== 'undefined' && window.__quizFromOfflinePack === true) return;
+  } catch (e) { /* ignore */ }
+  if (isDeviceOffline()) return;
   const language = (languageSelect && languageSelect.value) || 'en';
   const source = card.meaning || '';
   if (language === 'en' || !source) return;
@@ -1112,6 +1400,15 @@ function shuffleArray(values) {
   return arr;
 }
 
+function refreshOfflineSourceLabel() {
+  try {
+    if (typeof updatePracticeTopLabel === 'function') updatePracticeTopLabel();
+    if (window.__quizFromOfflinePack === true && practiceTopLabel) {
+      practiceTopLabel.textContent += ' · 📴 offline';
+    }
+  } catch (e) { /* never break UI */ }
+}
+
 function renderQuizCard() {
   if (autoNextTimer) {
     clearTimeout(autoNextTimer);
@@ -1119,6 +1416,9 @@ function renderQuizCard() {
   }
 
   const currentPool = getCurrentKanjiPool();
+  try {
+    window.__quizFromOfflinePack = shouldUseOfflinePack() && Array.isArray(currentPool) && currentPool.length > 0;
+  } catch (e) { /* ignore */ }
   if (!currentPool || currentPool.length === 0) {
     if (kanjiWord) kanjiWord.textContent = '—';
     if (kanjiMeta) kanjiMeta.classList.add('hidden');
@@ -1126,6 +1426,8 @@ function renderQuizCard() {
   }
 
   const card = currentPool[Math.floor(Math.random() * currentPool.length)];
+
+  try { refreshOfflineSourceLabel(); } catch (e) { /* ignore */ }
 
   currentKanjiChar = card.kanji || '';
   try { window.__currentQuizCard = card; } catch (e) { /* ignore */ }
@@ -1140,7 +1442,15 @@ function renderQuizCard() {
 
   if (metaRows.length >= 3) {
     metaRows[0].children[1].textContent = card.reading || '—';
-    metaRows[1].children[1].textContent = localizedMeaning(card.meaning) || '—';
+    // Offline pack entries already store the final meaning — use it as-is.
+    // Online entries keep the old behaviour (cached/offline-dict + live fetch).
+    try {
+      metaRows[1].children[1].textContent = (window.__quizFromOfflinePack === true)
+        ? (card.meaning || '—')
+        : (localizedMeaning(card.meaning) || '—');
+    } catch (e) {
+      metaRows[1].children[1].textContent = card.meaning || '—';
+    }
     metaRows[2].children[1].textContent = card.example || '—';
     enhanceMeaningTranslation(card);
   }
@@ -1149,8 +1459,11 @@ function renderQuizCard() {
     .filter(Array.isArray)
     .flat();
 
+  // Offline pack mode: build wrong options only from the downloaded pack text —
+  // the full online pools may be unavailable / stale while offline.
+  const distractorSource = (window.__quizFromOfflinePack === true) ? currentPool : allPools;
   const uniqueReadings = [...new Set(
-    allPools
+    distractorSource
       .map((item) => item && item.reading)
       .filter((value) => typeof value === 'string' && value.trim())
   )];
@@ -1347,6 +1660,11 @@ answerButtons.forEach((button) => {
 
 function speakKanjiReading(skipLimit) {
   try {
+    // Offline pack mode excludes voice — needs internet (device voice data / TTS).
+    if (isDeviceOffline() && shouldUseOfflinePack()) {
+      showLimitToast('Voice needs internet.');
+      return;
+    }
     // Gated by daily pre-answer limit unless bypassed (auto-play after reveal).
     if (skipLimit !== true && typeof tryConsumeHelperUse === 'function') {
       if (!tryConsumeHelperUse('speaker')) return;
@@ -1391,6 +1709,13 @@ function toggleHintSentence() {
   try {
     const box = document.getElementById('hintBox');
     if (!box) return;
+    // Offline pack mode excludes hints — hint builder data is online-only.
+    if (isDeviceOffline() && shouldUseOfflinePack()) {
+      box.textContent = '💡 Hints need internet.';
+      box.dataset.kanji = currentKanjiChar;
+      box.hidden = false;
+      return;
+    }
     if (!box.hidden && box.dataset.kanji === currentKanjiChar && box.textContent) {
       box.hidden = true;
       return;
@@ -1661,18 +1986,87 @@ navItems.forEach((item) => {
   item.addEventListener('click', () => {
     navItems.forEach((button) => button.classList.remove('active'));
     item.classList.add('active');
-    if (item.textContent.includes('設定')) {
+    const tab = item.getAttribute('data-nav-tab') || '';
+    if (tab === 'offline') {
+      openOfflinePanel();
+      setActiveMenuItem('offline');
+      return;
+    }
+    if (tab === 'stats') {
+      try { renderProgressPanel(); } catch (e) { /* ignore */ }
+      if (progressPanel) progressPanel.classList.add('is-open');
+      if (settingsPanel) settingsPanel.classList.remove('is-open');
+      if (savedSessionPanel) savedSessionPanel.classList.remove('is-open');
+      if (offlinePanel) offlinePanel.classList.remove('is-open');
+      setActiveMenuItem('progress');
+      return;
+    }
+    if (tab === 'record') {
+      try { renderSavedSessions(); } catch (e) { /* ignore */ }
+      if (savedSessionPanel) savedSessionPanel.classList.add('is-open');
+      if (settingsPanel) settingsPanel.classList.remove('is-open');
+      if (progressPanel) progressPanel.classList.remove('is-open');
+      if (offlinePanel) offlinePanel.classList.remove('is-open');
+      setActiveMenuItem('saved');
+      return;
+    }
+    if (tab === 'settings' || item.textContent.includes('設定')) {
       if (settingsPanel) settingsPanel.classList.add('is-open');
+      if (progressPanel) progressPanel.classList.remove('is-open');
+      if (savedSessionPanel) savedSessionPanel.classList.remove('is-open');
+      if (offlinePanel) offlinePanel.classList.remove('is-open');
       setActiveMenuItem('settings');
     } else {
       // Home (or other bottom tab) -> close panels and return to main page.
-      if (settingsPanel) settingsPanel.classList.remove('is-open');
-      if (progressPanel) progressPanel.classList.remove('is-open');
-      if (savedSessionPanel) savedSessionPanel.classList.remove('is-open');
-      setActiveMenuItem('home');
+      closeAllPanels();
     }
   });
 });
+
+if (closeOfflinePanel) {
+  closeOfflinePanel.addEventListener('click', () => {
+    closeOfflinePanelUI();
+  });
+}
+
+const footerOfflineBtn = document.getElementById('footerOfflineBtn');
+if (footerOfflineBtn) {
+  footerOfflineBtn.addEventListener('click', (event) => {
+    if (event) event.stopPropagation();
+    openOfflinePanel();
+    try { setActiveMenuItem('offline'); } catch (e) { /* ignore */ }
+  });
+}
+
+if (offlinePanel) {
+  offlinePanel.addEventListener('click', (event) => {
+    if (event.target === offlinePanel) {
+      closeOfflinePanelUI();
+    }
+  });
+}
+
+if (offlineDownloadBtn) {
+  offlineDownloadBtn.addEventListener('click', () => {
+    downloadOfflinePack();
+  });
+}
+
+if (offlineModeToggle) {
+  offlineModeToggle.addEventListener('click', () => {
+    try {
+      const next = !isOfflineModePreferred();
+      setOfflinePref({ ...(getOfflinePref() || {}), useOffline: next });
+      refreshOfflineUI();
+      renderQuizCard();
+    } catch (error) { /* ignore */ }
+  });
+}
+
+try {
+  window.addEventListener('online', () => { try { renderQuizCard(); } catch (e) { /* ignore */ } });
+  window.addEventListener('offline', () => { try { renderQuizCard(); } catch (e) { /* ignore */ } });
+} catch (error) { /* ignore */ }
 
 try {
   applySettings();

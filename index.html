@@ -69,6 +69,10 @@
               <span>📚</span>
               <span>Saved</span>
             </button>
+            <button class="menu-item" data-panel="offline">
+              <span>⬇️</span>
+              <span>Offline</span>
+            </button>
           </nav>
 
           <div class="menu-footer">
@@ -145,21 +149,26 @@
             <span>🏠</span>
             <small>ホーム</small>
           </button>
-          <button class="nav-item">
+          <button class="nav-item" data-nav-tab="stats">
             <span>📊</span>
             <small>統計</small>
           </button>
-          <button class="nav-item">
+          <button class="nav-item" data-nav-tab="record">
             <span>📝</span>
             <small>記録</small>
           </button>
-          <button class="nav-item">
+          <button class="nav-item" data-nav-tab="settings">
             <span>⚙️</span>
             <small>設定</small>
+          </button>
+          <button class="nav-item" data-nav-tab="offline" id="offlineNavBtn">
+            <span>⬇️</span>
+            <small>Offline</small>
           </button>
         </nav>
 
         <footer class="app-footer">
+          <button type="button" class="footer-offline-btn" id="footerOfflineBtn" aria-label="Open offline downloads">⬇️ Offline</button>
           <span>Developed By: <a href="https://www.kandelg.com.np" target="_blank" rel="noreferrer">Kandelg</a></span>
         </footer>
       </div>
@@ -237,6 +246,42 @@
       <div class="saved-session-card">
         <h3>Saved sessions</h3>
         <div class="saved-session-list" id="savedSessionList"></div>
+      </div>
+    </div>
+
+    <div class="offline-panel" id="offlinePanel" aria-live="polite">
+      <div class="panel-top">
+        <h2>Offline Mode</h2>
+        <button class="close-panel" id="closeOfflinePanel" aria-label="Close offline">×</button>
+      </div>
+      <div class="offline-body">
+        <p class="offline-desc">Download text data (kanji + reading + meaning) so practice works without internet. Voice 🔊, stroke order ✍️ and hints 💡 need internet.</p>
+        <p class="offline-status" id="offlineStatus">Checking downloaded packs…</p>
+        <div class="setting-item">
+          <label for="offlineLevel">Level</label>
+          <select id="offlineLevel">
+            <option value="N5">N5</option>
+            <option value="N4">N4</option>
+            <option value="N3">N3</option>
+            <option value="N2">N2</option>
+            <option value="N1">N1</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="offlineLang">Language</label>
+          <select id="offlineLang">
+            <option value="en">English</option>
+            <option value="phil">Filipino</option>
+            <option value="id">Indonesia</option>
+            <option value="ne">नेपाली</option>
+            <option value="ko">한국어</option>
+            <option value="vi">Tiếng Việt</option>
+          </select>
+        </div>
+        <button type="button" class="primary-btn offline-download" id="offlineDownloadBtn">⬇️ Download pack</button>
+        <div class="offline-packs" id="offlinePackList"></div>
+        <button type="button" class="secondary-btn offline-toggle" id="offlineModeToggle">Use offline data: OFF</button>
+        <p class="offline-note" id="offlineNote">Online हुँदा सधैं online data use हुन्छ; offline हुँदा download गरेको pack बाट चल्छ।</p>
       </div>
     </div>
 

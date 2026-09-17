@@ -26,6 +26,11 @@ const vibrationToggle = document.getElementById('vibrationToggle');
 const backgroundSelect = document.getElementById('backgroundSelect');
 const fontSizeRange = document.getElementById('fontSizeRange');
 const autoNextDelaySelect = document.getElementById('autoNextDelaySelect');
+const premiumThemeBtn = document.getElementById('premiumThemeBtn');
+const premiumThemeCurrent = document.getElementById('premiumThemeCurrent');
+const themePanel = document.getElementById('themePanel');
+const themeGrid = document.getElementById('themeGrid');
+const closeThemePanel = document.getElementById('closeThemePanel');
 const navItems = document.querySelectorAll('.nav-item');
 const menuItems = document.querySelectorAll('.menu-item');
 const levelSelect = document.getElementById('levelSelect');
@@ -107,6 +112,45 @@ const defaults = {
 };
 
 const AUTO_NEXT_DELAY_OPTIONS = [3, 4, 5, 6];
+
+// ---- Premium themes -------------------------------------------------------
+// Single source of truth for the main-page "✨ Premium Theme" button, the theme
+// picker panel and the Settings -> Background color dropdown. Every id here
+// MUST have a matching body[data-theme="..."] block in style.css.
+// Icons are written with \u escapes so the source stays plain ASCII.
+const PREMIUM_THEMES = [
+  { id: 'fuji', icon: '\uD83D\uDDFB', name: 'Mt. Fuji', jp: '富士山', colors: ['#1d3f7a', '#7fa8e6', '#ffffff'] },
+  { id: 'sakura', icon: '\uD83C\uDF38', name: 'Sakura', jp: '桜', colors: ['#b03a63', '#f2a8c4', '#fff5f9'] },
+  { id: 'ninja', icon: '\uD83E\uDD77', name: 'Ninja', jp: '忍者', colors: ['#0a0b0e', '#5b616e', '#ef4444'] },
+  { id: 'anime', icon: '\uD83C\uDF8C', name: 'Anime Pop', jp: 'アニメ', colors: ['#5b21b6', '#22d3ee', '#f472b6'] },
+  { id: 'temple', icon: '\u26E9\uFE0F', name: 'Jinja', jp: '神社', colors: ['#7c2019', '#c9a227', '#f8ecdb'] },
+  { id: 'sea', icon: '\uD83C\uDF0A', name: 'Sea', jp: '海', colors: ['#0b4f68', '#34c3c9', '#e9f8fb'] },
+  { id: 'train', icon: '\uD83D\uDE84', name: 'Bullet Train', jp: '新幹線', colors: ['#17335c', '#ffffff', '#e11d48'] },
+  { id: 'matcha', icon: '\uD83C\uDF75', name: 'Matcha', jp: '抹茶', colors: ['#2b5636', '#a3c959', '#f0f8e8'] },
+  { id: 'matsuri', icon: '\uD83C\uDFEE', name: 'Matsuri Night', jp: '祭', colors: ['#7f1d1d', '#f59e0b', '#2b1a20'] },
+  { id: 'neon', icon: '\uD83C\uDF03', name: 'Neo Tokyo', jp: 'ネオン', colors: ['#16122b', '#22d3ee', '#f472b6'] }
+];
+
+// Classic themes + premium themes -> used for the button label and for
+// validating a stored theme id before it reaches body[data-theme].
+const THEME_LABELS = {
+  beige: 'Warm beige',
+  dark: 'Dark night',
+  mint: 'Soft mint',
+  royal: 'Royal blue'
+};
+
+PREMIUM_THEMES.forEach((theme) => {
+  THEME_LABELS[theme.id] = theme.name;
+});
+
+function resolveThemeId(candidate) {
+  return Object.prototype.hasOwnProperty.call(THEME_LABELS, candidate) ? candidate : defaults.theme;
+}
+
+function themeLabel(themeId) {
+  return THEME_LABELS[themeId] || THEME_LABELS[defaults.theme] || 'Warm beige';
+}
 
 function getAutoNextDelay() {
   try {
@@ -296,7 +340,8 @@ function applySettings() {
   }
   if (!settings || typeof settings !== 'object') settings = { ...defaults };
   if (!body) return;
-  body.dataset.theme = settings.theme || defaults.theme;
+  const themeValue = resolveThemeId(settings.theme);
+  body.dataset.theme = themeValue;
   if (soundToggle) {
     soundToggle.classList.toggle('active', settings.sound !== false);
     soundToggle.setAttribute('aria-pressed', String(settings.sound !== false));
@@ -305,7 +350,7 @@ function applySettings() {
     vibrationToggle.classList.toggle('active', settings.vibration !== false);
     vibrationToggle.setAttribute('aria-pressed', String(settings.vibration !== false));
   }
-  if (backgroundSelect) backgroundSelect.value = settings.theme || defaults.theme;
+  if (backgroundSelect) backgroundSelect.value = themeValue;
   if (fontSizeRange) fontSizeRange.value = settings.fontSize || defaults.fontSize;
   if (autoNextDelaySelect) {
     const delayVal = Number(settings.autoNextDelay);
@@ -327,6 +372,10 @@ function applySettings() {
   try { updatePracticeTopLabel(); } catch (error) { /* keep UI alive */ }
   try { updateMetaLabels(); } catch (error) { /* keep UI alive */ }
   try { updateActionLabels(); } catch (error) { /* keep UI alive */ }
+  try { updatePremiumThemeLabel(); } catch (error) { /* keep UI alive */ }
+  try {
+    if (themePanel && themePanel.classList.contains('is-open')) renderThemeGrid();
+  } catch (error) { /* keep UI alive */ }
   try { renderQuizCard(); } catch (error) { /* keep UI alive */ }
 }
 
@@ -787,6 +836,7 @@ function refreshOfflineUI() {
 function openOfflinePanel() {
   try {
     refreshOfflineUI();
+    hideThemePanel();
     if (offlinePanel) offlinePanel.classList.add('is-open');
     if (settingsPanel) settingsPanel.classList.remove('is-open');
     if (progressPanel) progressPanel.classList.remove('is-open');
@@ -808,6 +858,76 @@ function closeAllPanels() {
     if (progressPanel) progressPanel.classList.remove('is-open');
     if (savedSessionPanel) savedSessionPanel.classList.remove('is-open');
     if (offlinePanel) offlinePanel.classList.remove('is-open');
+    if (themePanel) themePanel.classList.remove('is-open');
+    setActiveMenuItem('home');
+  } catch (error) { /* ignore */ }
+}
+
+// ---- Premium theme picker (main-page button + 10 theme cards) -------------
+function renderThemeGrid() {
+  if (!themeGrid) return;
+  const activeTheme = resolveThemeId(loadSettings().theme);
+  themeGrid.textContent = '';
+
+  PREMIUM_THEMES.forEach((theme) => {
+    const isActive = theme.id === activeTheme;
+
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = isActive ? 'theme-card active' : 'theme-card';
+    card.setAttribute('data-theme-id', theme.id);
+    card.setAttribute('aria-pressed', String(isActive));
+
+    const swatch = document.createElement('span');
+    swatch.className = 'theme-swatch';
+    (theme.colors || []).forEach((color) => {
+      const chip = document.createElement('i');
+      chip.style.background = color;
+      swatch.appendChild(chip);
+    });
+
+    const name = document.createElement('span');
+    name.className = 'theme-card-name';
+    name.textContent = `${theme.icon} ${theme.name}`;
+
+    const meta = document.createElement('span');
+    meta.className = 'theme-card-jp';
+    meta.textContent = isActive ? `${theme.jp} · active` : `${theme.jp} · premium`;
+
+    card.appendChild(swatch);
+    card.appendChild(name);
+    card.appendChild(meta);
+    themeGrid.appendChild(card);
+  });
+}
+
+function updatePremiumThemeLabel() {
+  if (!premiumThemeCurrent) return;
+  const activeTheme = resolveThemeId(loadSettings().theme);
+  premiumThemeCurrent.textContent = themeLabel(activeTheme);
+}
+
+function hideThemePanel() {
+  try {
+    if (themePanel) themePanel.classList.remove('is-open');
+  } catch (error) { /* ignore */ }
+}
+
+function openThemePanel() {
+  try {
+    renderThemeGrid();
+    if (themePanel) themePanel.classList.add('is-open');
+    if (settingsPanel) settingsPanel.classList.remove('is-open');
+    if (progressPanel) progressPanel.classList.remove('is-open');
+    if (savedSessionPanel) savedSessionPanel.classList.remove('is-open');
+    if (offlinePanel) offlinePanel.classList.remove('is-open');
+    if (sideMenu) sideMenu.classList.remove('is-open');
+  } catch (error) { /* ignore */ }
+}
+
+function closeThemePanelUI() {
+  try {
+    hideThemePanel();
     setActiveMenuItem('home');
   } catch (error) { /* ignore */ }
 }
@@ -1147,26 +1267,28 @@ function setActiveMenuItem(panel) {
 }
 
 // Main page (practice area + header/footer empty space) click -> close any open panel and return Home.
-// Settings/Progress/Saved panels are position:fixed (outside .screen-content),
+// Settings/Progress/Theme/Saved panels are position:fixed (outside .screen-content),
 // so a document-level listener is needed — but panel/menu/quiz clicks are ignored.
 document.addEventListener('click', (event) => {
   try {
     const target = event.target;
     if (!target || typeof target.closest !== 'function') return;
     // Clicks inside panels, menus, modals or the Settings menu item itself must NOT close.
-    if (target.closest('.settings-panel, .progress-panel, .saved-session-panel, .offline-panel, .side-menu, .save-progress-modal, .stroke-modal, .menu-item, .nav-item, .bottom-nav')) return;
+    if (target.closest('.settings-panel, .progress-panel, .theme-panel, .saved-session-panel, .offline-panel, .side-menu, .save-progress-modal, .stroke-modal, .menu-item, .nav-item, .bottom-nav')) return;
     // Only react when some panel is actually open.
     const settingsOpen = settingsPanel && settingsPanel.classList.contains('is-open');
     const progressOpen = progressPanel && progressPanel.classList.contains('is-open');
     const savedOpen = savedSessionPanel && savedSessionPanel.classList.contains('is-open');
     const offlineOpen = offlinePanel && offlinePanel.classList.contains('is-open');
-    if (!settingsOpen && !progressOpen && !savedOpen && !offlineOpen) return;
+    const themeOpen = themePanel && themePanel.classList.contains('is-open');
+    if (!settingsOpen && !progressOpen && !savedOpen && !offlineOpen && !themeOpen) return;
     // Only clicks on the main page surface (practice area / phone frame background).
     if (!target.closest('.screen-content, .phone-frame, .page-shell')) return;
     if (settingsOpen) settingsPanel.classList.remove('is-open');
     if (progressOpen) progressPanel.classList.remove('is-open');
     if (savedOpen) savedSessionPanel.classList.remove('is-open');
     if (offlineOpen) offlinePanel.classList.remove('is-open');
+    if (themeOpen) themePanel.classList.remove('is-open');
     setActiveMenuItem('home');
   } catch (e) { /* never break clicks */ }
 });
@@ -1174,6 +1296,8 @@ document.addEventListener('click', (event) => {
 menuItems.forEach((item) => {
   item.addEventListener('click', () => {
     setActiveMenuItem(item.dataset.panel);
+    // Any side-menu choice replaces the theme picker, whatever it opens.
+    hideThemePanel();
 
     if (item.dataset.panel === 'settings') {
       settingsPanel.classList.add('is-open');
@@ -2025,6 +2149,8 @@ navItems.forEach((item) => {
   item.addEventListener('click', () => {
     navItems.forEach((button) => button.classList.remove('active'));
     item.classList.add('active');
+    // Bottom-nav tabs always take over the screen: drop the theme picker first.
+    hideThemePanel();
     const tab = item.getAttribute('data-nav-tab') || '';
     if (tab === 'offline') {
       openOfflinePanel();
@@ -2076,6 +2202,47 @@ if (footerOfflineBtn) {
     try { setActiveMenuItem('offline'); } catch (e) { /* ignore */ }
   });
 }
+
+// ---- Premium theme button + picker panel ---------------------------------
+if (premiumThemeBtn) {
+  premiumThemeBtn.addEventListener('click', (event) => {
+    // The button lives inside .screen-content, and that surface closes panels on
+    // click, so stop the bubble before toggling the picker open.
+    if (event) event.stopPropagation();
+    openThemePanel();
+  });
+}
+
+if (closeThemePanel) {
+  closeThemePanel.addEventListener('click', () => {
+    closeThemePanelUI();
+  });
+}
+
+if (themePanel) {
+  themePanel.addEventListener('click', (event) => {
+    if (event.target === themePanel) closeThemePanelUI();
+  });
+}
+
+if (themeGrid) {
+  themeGrid.addEventListener('click', (event) => {
+    const target = event.target;
+    const card = target && typeof target.closest === 'function'
+      ? target.closest('.theme-card')
+      : null;
+    if (!card) return;
+    const themeId = card.getAttribute('data-theme-id');
+    if (!themeId || !Object.prototype.hasOwnProperty.call(THEME_LABELS, themeId)) return;
+    // saveSettings -> applySettings repaints the app, the Settings dropdown,
+    // the button chip label and this grid in one pass.
+    saveSettings({ theme: themeId });
+  });
+}
+
+try {
+  updatePremiumThemeLabel();
+} catch (error) { /* keep UI alive */ }
 
 if (offlinePanel) {
   offlinePanel.addEventListener('click', (event) => {

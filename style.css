@@ -71,11 +71,268 @@ body[data-theme="royal"] {
   --accent: #d9b36d;
 }
 
+/* ================================================================
+   PREMIUM THEMES  (10 entries — must match PREMIUM_THEMES in script.js)
+   SVG backgrounds are the same illustrations defined in
+   tools/_svg-encode.js / tools/_apply-themes-bg.js
+   ================================================================ */
+
+/* 1. Mt. Fuji ---------------------------------------------------- */
+body[data-theme="fuji"] {
+  --page-bg: #cfe0f7;
+  --phone-bg: #dce9f9;
+  --screen-bg: #c5d8f4;
+  --header-bg: #1d3f7a;
+  --primary: #1d3f7a;
+  --primary-soft: #2c55a0;
+  --panel-bg: #eaf2fd;
+  --card-bg: #f0f6fe;
+  --text: #0e1e3d;
+  --muted: #4d6a99;
+  --shadow: rgba(10, 20, 50, 0.2);
+  --button-bg: #dce9f9;
+  --outline: rgba(10, 30, 70, 0.1);
+  --nav-bg: rgba(220, 233, 249, 0.8);
+  --accent: #7fa8e6;
+  background-image:
+    linear-gradient(rgba(207, 224, 247, 0.62), rgba(207, 224, 247, 0.62)),
+    url("https://images.unsplash.com/photo-1547592166-23ac45744acd?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 2. Sakura ------------------------------------------------------ */
+body[data-theme="sakura"] {
+  --page-bg: #fff5f9;
+  --phone-bg: #fff9fb;
+  --screen-bg: #fce8f2;
+  --header-bg: #8b2252;
+  --primary: #b03a63;
+  --primary-soft: #c4547a;
+  --panel-bg: #fff0f7;
+  --card-bg: #fff5fa;
+  --text: #2d0f1a;
+  --muted: #9c5070;
+  --shadow: rgba(80, 20, 50, 0.16);
+  --button-bg: #fde8f2;
+  --outline: rgba(80, 20, 50, 0.1);
+  --nav-bg: rgba(255, 245, 250, 0.82);
+  --accent: #f2a8c4;
+  background-image:
+    linear-gradient(rgba(255, 245, 249, 0.60), rgba(255, 245, 249, 0.60)),
+    url("https://images.unsplash.com/photo-1522383225653-ed111181a951?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 3. Ninja ------------------------------------------------------- */
+body[data-theme="ninja"] {
+  --page-bg: #16171b;
+  --phone-bg: #1c1d22;
+  --screen-bg: #111318;
+  --header-bg: #0a0b0e;
+  --primary: #e8e9ef;
+  --primary-soft: #c4c8d4;
+  --panel-bg: #22232a;
+  --card-bg: #2a2b33;
+  --text: #e8e9ef;
+  --muted: #8a8f9e;
+  --shadow: rgba(0, 0, 0, 0.5);
+  --button-bg: #2e2f38;
+  --outline: rgba(255, 255, 255, 0.06);
+  --nav-bg: rgba(22, 23, 27, 0.88);
+  --accent: #ef4444;
+  background-image:
+    linear-gradient(rgba(22, 23, 27, 0.70), rgba(22, 23, 27, 0.70)),
+    url("https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 4. Anime Pop --------------------------------------------------- */
+body[data-theme="anime"] {
+  --page-bg: #f4ecff;
+  --phone-bg: #f8f2ff;
+  --screen-bg: #ede0ff;
+  --header-bg: #5b21b6;
+  --primary: #7c3aed;
+  --primary-soft: #8b5cf6;
+  --panel-bg: #f9f4ff;
+  --card-bg: #faf6ff;
+  --text: #1e0b3a;
+  --muted: #7c6aa0;
+  --shadow: rgba(60, 10, 100, 0.16);
+  --button-bg: #ede0ff;
+  --outline: rgba(60, 10, 100, 0.1);
+  --nav-bg: rgba(244, 236, 255, 0.82);
+  --accent: #f472b6;
+  background-image:
+    linear-gradient(rgba(244, 236, 255, 0.60), rgba(244, 236, 255, 0.60)),
+    url("https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 5. Jinja (Temple) ---------------------------------------------- */
+body[data-theme="temple"] {
+  --page-bg: #fdf7ec;
+  --phone-bg: #fef9f0;
+  --screen-bg: #faedcf;
+  --header-bg: #7c2019;
+  --primary: #7c2019;
+  --primary-soft: #9e2d21;
+  --panel-bg: #fef7ea;
+  --card-bg: #fffbf2;
+  --text: #2a0c06;
+  --muted: #9a6040;
+  --shadow: rgba(80, 20, 8, 0.18);
+  --button-bg: #faedcf;
+  --outline: rgba(80, 20, 8, 0.1);
+  --nav-bg: rgba(253, 247, 236, 0.82);
+  --accent: #c9a227;
+  background-image:
+    linear-gradient(rgba(253, 247, 236, 0.62), rgba(253, 247, 236, 0.62)),
+    url("https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 6. Sea --------------------------------------------------------- */
+body[data-theme="sea"] {
+  --page-bg: #eef9fb;
+  --phone-bg: #f3fbfc;
+  --screen-bg: #d4f4f7;
+  --header-bg: #0b4f68;
+  --primary: #0b4f68;
+  --primary-soft: #166587;
+  --panel-bg: #e8f8fb;
+  --card-bg: #f0fbfd;
+  --text: #041a22;
+  --muted: #3d8ba0;
+  --shadow: rgba(5, 40, 55, 0.18);
+  --button-bg: #d4f4f7;
+  --outline: rgba(5, 40, 55, 0.1);
+  --nav-bg: rgba(238, 249, 251, 0.82);
+  --accent: #34c3c9;
+  background-image:
+    linear-gradient(rgba(238, 249, 251, 0.58), rgba(238, 249, 251, 0.58)),
+    url("https://images.unsplash.com/photo-1504233529578-6d46baba6d34?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 7. Bullet Train ------------------------------------------------ */
+body[data-theme="train"] {
+  --page-bg: #f7f9fc;
+  --phone-bg: #fbfcfe;
+  --screen-bg: #edf1f9;
+  --header-bg: #17335c;
+  --primary: #17335c;
+  --primary-soft: #21477a;
+  --panel-bg: #f2f5fb;
+  --card-bg: #f8fafd;
+  --text: #0a1525;
+  --muted: #546480;
+  --shadow: rgba(10, 25, 55, 0.16);
+  --button-bg: #edf1f9;
+  --outline: rgba(10, 25, 55, 0.1);
+  --nav-bg: rgba(247, 249, 252, 0.82);
+  --accent: #e11d48;
+  background-image:
+    linear-gradient(rgba(247, 249, 252, 0.62), rgba(247, 249, 252, 0.62)),
+    url("https://images.unsplash.com/photo-1569629743817-70d8db6c323b?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 8. Matcha ------------------------------------------------------ */
+body[data-theme="matcha"] {
+  --page-bg: #f5faf0;
+  --phone-bg: #f8fcf4;
+  --screen-bg: #e3f4d6;
+  --header-bg: #2b5636;
+  --primary: #2b5636;
+  --primary-soft: #3a6e47;
+  --panel-bg: #eef8e6;
+  --card-bg: #f4fbee;
+  --text: #0d1f12;
+  --muted: #4d7a5a;
+  --shadow: rgba(15, 45, 25, 0.16);
+  --button-bg: #e3f4d6;
+  --outline: rgba(15, 45, 25, 0.1);
+  --nav-bg: rgba(245, 250, 240, 0.82);
+  --accent: #a3c959;
+  background-image:
+    linear-gradient(rgba(245, 250, 240, 0.60), rgba(245, 250, 240, 0.60)),
+    url("https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 9. Matsuri Night ----------------------------------------------- */
+body[data-theme="matsuri"] {
+  --page-bg: #150e12;
+  --phone-bg: #1c1318;
+  --screen-bg: #100c0f;
+  --header-bg: #3a0a0a;
+  --primary: #f59e0b;
+  --primary-soft: #fbbf24;
+  --panel-bg: #201419;
+  --card-bg: #281820;
+  --text: #f3e8d4;
+  --muted: #b08060;
+  --shadow: rgba(0, 0, 0, 0.6);
+  --button-bg: #2a1820;
+  --outline: rgba(255, 200, 80, 0.1);
+  --nav-bg: rgba(21, 14, 18, 0.88);
+  --accent: #ef4444;
+  background-image:
+    linear-gradient(rgba(21, 14, 18, 0.68), rgba(21, 14, 18, 0.68)),
+    url("https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* 10. Neo Tokyo -------------------------------------------------- */
+body[data-theme="neon"] {
+  --page-bg: #0b0916;
+  --phone-bg: #100e1c;
+  --screen-bg: #080612;
+  --header-bg: #07050f;
+  --primary: #22d3ee;
+  --primary-soft: #67e8f9;
+  --panel-bg: #130f22;
+  --card-bg: #1a1530;
+  --text: #e8f4ff;
+  --muted: #7090b0;
+  --shadow: rgba(0, 0, 0, 0.7);
+  --button-bg: #1a1530;
+  --outline: rgba(34, 211, 238, 0.15);
+  --nav-bg: rgba(11, 9, 22, 0.9);
+  --accent: #f472b6;
+  background-image:
+    linear-gradient(rgba(11, 9, 22, 0.68), rgba(11, 9, 22, 0.68)),
+    url("https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1400&q=80&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 * {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   min-height: 100%;
   font-family: "Segoe UI", "Noto Sans JP", sans-serif;
@@ -83,7 +340,9 @@ html, body {
   color: var(--text);
 }
 
-button, select, input {
+button,
+select,
+input {
   font: inherit;
 }
 
@@ -197,12 +456,12 @@ button, select, input {
 
 .visually-hidden {
   position: absolute !important;
-  height: 1px; width: 1px;
+  height: 1px;
+  width: 1px;
   overflow: hidden;
   clip: rect(1px, 1px, 1px, 1px);
   white-space: nowrap;
 }
-
 
 .side-menu {
   position: absolute;
@@ -411,7 +670,7 @@ button, select, input {
 
 /* Middle "meaning / artha" row — bold + distinct color + bigger font */
 .meaning-row {
-  background: rgba(179, 84, 0, 0.10);
+  background: rgba(179, 84, 0, 0.1);
   border: 1.5px solid rgba(179, 84, 0, 0.45);
   padding: 12px 14px;
   align-items: center;
@@ -470,7 +729,9 @@ body[data-theme="royal"] .meaning-row span:last-child {
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .answer-option:hover {
@@ -554,15 +815,22 @@ body[data-theme="dark"] .hint-box {
   background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 55%, #06b6d4 100%);
   border: none;
   border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 8px 20px rgba(37, 99, 235, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
   color: #ffffff;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
 }
 
 .next-button:hover {
   transform: translateY(-2px);
   filter: brightness(1.08);
-  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 12px 26px rgba(37, 99, 235, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .next-button:active {
@@ -583,7 +851,9 @@ body[data-theme="dark"] .hint-box {
 
 body[data-theme="dark"] .next-button {
   background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 55%, #22d3ee 100%);
-  box-shadow: 0 8px 22px rgba(59, 130, 246, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 8px 22px rgba(59, 130, 246, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* Usage-limit badges + finished toast */
@@ -626,7 +896,9 @@ body[data-theme="dark"] .next-button {
   color: #b91c1c;
   opacity: 0;
   transform: translateY(4px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   pointer-events: none;
 }
 
@@ -798,7 +1070,11 @@ body[data-theme="dark"] .limit-toast {
   margin: 0;
   padding: 12px 14px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(124, 199, 155, 0.22), rgba(124, 199, 155, 0.08));
+  background: linear-gradient(
+    135deg,
+    rgba(124, 199, 155, 0.22),
+    rgba(124, 199, 155, 0.08)
+  );
   border: 1px solid rgba(124, 199, 155, 0.35);
   color: #eafff3;
   font-size: 0.95rem;
@@ -1356,4 +1632,230 @@ body[data-theme="dark"] .stroke-btn {
 body[data-theme="dark"] .stroke-close {
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
+}
+
+/* ================================================================
+   PREMIUM THEME BUTTON  (main page header)
+   ================================================================ */
+
+.premium-theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: linear-gradient(135deg, #1d3f7a 0%, #7c3aed 60%, #b03a63 100%);
+  border: none;
+  border-radius: 20px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(80, 20, 100, 0.28);
+  transition:
+    opacity 0.15s,
+    transform 0.12s;
+  white-space: nowrap;
+}
+
+.premium-theme-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.premium-theme-btn:active {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.premium-theme-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.premium-theme-label {
+  font-size: 0.78rem;
+}
+
+.premium-theme-current {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   THEME PICKER PANEL  (slide-up overlay)
+   ================================================================ */
+
+.theme-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.theme-panel.is-open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.theme-panel > * {
+  max-width: 500px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.theme-panel .panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 10px;
+  background: var(--panel-bg, #f9f1e7);
+  border-radius: 20px 20px 0 0;
+}
+
+.theme-panel .panel-top h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text, #1d2230);
+}
+
+.close-panel {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--button-bg, #f0ebe4);
+  border-radius: 50%;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--muted, #727d87);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s;
+}
+
+.close-panel:hover {
+  background: var(--outline, rgba(0, 0, 0, 0.1));
+}
+
+/* ================================================================
+   THEME GRID  (2-column card layout inside the panel)
+   ================================================================ */
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  background: var(--panel-bg, #f9f1e7);
+  max-height: 52vh;
+  overflow-y: auto;
+}
+
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 12px 10px;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  background: var(--card-bg, #f7efe5);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    transform 0.12s,
+    box-shadow 0.15s;
+  box-shadow: 0 1px 4px var(--shadow, rgba(23, 29, 44, 0.08));
+}
+
+.theme-card:hover {
+  border-color: var(--accent, #e7b94c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px var(--shadow, rgba(23, 29, 44, 0.14));
+}
+
+.theme-card.active {
+  border-color: var(--primary, #122d69);
+  background: var(--button-bg, #f5f0ea);
+  box-shadow: 0 0 0 3px rgba(18, 45, 105, 0.12);
+}
+
+.theme-swatch {
+  display: flex;
+  gap: 4px;
+  height: 20px;
+}
+
+.theme-swatch span {
+  flex: 1;
+  border-radius: 6px;
+}
+
+.theme-card-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text, #1d2230);
+  line-height: 1.2;
+}
+
+.theme-card-jp {
+  font-size: 0.7rem;
+  color: var(--muted, #727d87);
+  line-height: 1.2;
+}
+
+.theme-panel-note {
+  margin: 0;
+  padding: 10px 20px 22px;
+  font-size: 0.72rem;
+  color: var(--muted, #727d87);
+  background: var(--panel-bg, #f9f1e7);
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ================================================================
+   DARK-THEME OVERRIDES for the picker panel
+   ================================================================ */
+
+body[data-theme="dark"] .theme-panel .panel-top,
+body[data-theme="ninja"] .theme-panel .panel-top,
+body[data-theme="matsuri"] .theme-panel .panel-top,
+body[data-theme="neon"] .theme-panel .panel-top {
+  background: var(--panel-bg);
+}
+
+body[data-theme="dark"] .theme-grid,
+body[data-theme="ninja"] .theme-grid,
+body[data-theme="matsuri"] .theme-grid,
+body[data-theme="neon"] .theme-grid {
+  background: var(--panel-bg);
+}
+
+body[data-theme="dark"] .theme-panel-note,
+body[data-theme="ninja"] .theme-panel-note,
+body[data-theme="matsuri"] .theme-panel-note,
+body[data-theme="neon"] .theme-panel-note {
+  background: var(--panel-bg);
+}
+
+body[data-theme="dark"] .theme-card.active,
+body[data-theme="ninja"] .theme-card.active,
+body[data-theme="matsuri"] .theme-card.active,
+body[data-theme="neon"] .theme-card.active {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
 }
